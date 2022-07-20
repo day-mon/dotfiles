@@ -10,6 +10,9 @@ alias cpv='rsync -ah --info=progress2'
 alias untar="tar -xvf"
 alias pacman="sudo pacman"
 alias cat="bat"
+alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
+
 
 # Functions
 take () {

@@ -1,6 +1,0 @@
-alias zconf="nvim ~/.zshrc"
-alias v="nvim"
-alias idea="~/.jetbrains/scripts/idea"
-alias ea="nvim ~/.hidden/.aliases"
-alias vconf="nvim ~/.config/nvim/init.vim"
-alias storm="~/.jetbrains/scripts/webstorm"

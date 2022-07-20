@@ -11,7 +11,10 @@ source ~/.hidden/antigen.zsh
 antigen init ~/.antigenrc
 
 # Loads Aliases
-source ~/.hidden/.aliases
+source ~/.hidden/.aliases.sh
+
+# Load Env Variables
+source ~/.hidden/.envs.sh
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -111,3 +114,4 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
