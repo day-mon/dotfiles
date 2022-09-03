@@ -20,6 +20,10 @@ take () {
     cd $1
 }
 
+gpg-export () {
+    gpg --armor --export $1
+}
+
 randomchars() {
     openssl rand -base64 $1
 }
