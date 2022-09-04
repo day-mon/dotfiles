@@ -109,7 +109,6 @@ cmp.setup {
         buffer = "[Buffer]",
         path = "[Path]",
       })[entry.source.name]
-      print(vim_item.menu)
       return vim_item
     end,
   },

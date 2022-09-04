@@ -23,9 +23,16 @@ km("v", ",", "<gv", opts)
 km("v", ".", ">gv", opts)
 
 
+
+
 -- nvim-tree
 km("n", "ge", ":NvimTreeToggle<cr>", opts)
 
 -- Telescope
 km("n", "<C-f>", "<cmd>Telescope live_grep<cr>", opts)
 km("n", "<S-e>", "<cmd>lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ previewer = false }))<cr>", opts)
+
+-- Other
+km("n", "<C-s>", "<cmd>w<cr>", opts)
+km("n", "el", "<S-0>", opts)
+km("n", "0", "bl", opts) 
