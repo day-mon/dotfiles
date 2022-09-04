@@ -59,6 +59,6 @@ COMPLETION_WAITING_DOTS="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(z sudo colored-man-pages git)
+plugins=(z sudo colored-man-pages ssh-agent git)
 
 source $ZSH/oh-my-zsh.sh
