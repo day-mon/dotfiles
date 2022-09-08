@@ -48,3 +48,7 @@ alias psmem='ps auxf | sort -nr -k 4 | head -5'
 
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
+
+# Auto binds cntrl arrows to back and forward
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
