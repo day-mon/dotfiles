@@ -3,7 +3,7 @@ MONITOR_SIZE=""
 RATE=""
 OUTPUT=""
 I=1
-for m in $(xrandr --query | grep -A1 " connected" | awk '{print $1; print $4}' | sed "s/*//g;" | sed "s/(normal//g;" | sed "s/--//g" | sed '/^[[:space:]]*$/d'); do
+for m in $(xrandr --query | grep -A1 " connected" | awk '{print $1; print $4}' | sed  -e "s/*//g;" -e "s/(normal//g;" -e  "s/--//g" -e '/^[[:space:]]*$/d'); do
 
     if [ $I -eq  1 ]; then
     	OUTPUT=$m
