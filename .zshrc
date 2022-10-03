@@ -11,6 +11,7 @@ autoload -Uz colors && colors
 # Sourced files
 zsh_add_file "zsh-exports"
 zsh_add_file "zsh-aliases"
+zsh_add_file "secrets"
 zsh_add_file ".p10k.zsh"
 
 # Plugins
