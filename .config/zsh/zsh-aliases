@@ -16,15 +16,10 @@ if [[ $(ls /usr/bin | grep -Fx "pacman") ]]; then
 	alias mirrora="sudo reflector --latest 50 --number 20 --sort age --save /etc/pacman.d/mirrorlist"
 fi
 
-if [[ $(ls /usr/bin | grep -Fx "bat" ]]; then
+if [[ $(ls /usr/bin | grep -Fx "bat") ]]; then
     alias cat="bat"
-
 fi
 
-
-alias ls='ls --color=auto'
-alias ll='ls -lav --ignore=..'   # show long listing of all except ".."
-alias l='ll'   # show long listing but no hidden dotfiles except "."
 alias mkdir="mkdir -pv"
 alias cd..="cd .."
 alias ..="cd .."
@@ -61,6 +56,10 @@ alias psmem='ps auxf | sort -nr -k 4 | head -5'
 
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
+
+alias ls='ls --color=auto'
+alias ll='ls -lav --ignore=..'   # show long listing of all except ".."
+alias l='ll'   # show long listing but no hidden dotfiles except "."
 
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
