@@ -26,7 +26,7 @@ function zsh_add_file() {
 }
 
 function add_all_ssh() {
-  eval ssh-agent -s >> /dev/null
+  eval `ssh-agent` &>/dev/null
 
   if [ ! -d "${HOME}/.ssh" ]; then
     echo "No .ssh directory found"
@@ -36,10 +36,11 @@ function add_all_ssh() {
 
   for key in "${HOME}/.ssh"/*; do
     ext="${key##*.}"
-    if [ "$ext" = "pub" ]; then
-      ssh-add "$key"
+    if [ "$ext" = "pub" ] || [ "$key" = "${HOME}/.ssh/known_hosts" ] || [ "$key" = "${HOME}/.ssh/known_hosts.old" ]; then
       continue
     fi
+
+    ssh-add "$key"
   done
 }
 
