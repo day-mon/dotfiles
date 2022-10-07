@@ -1,4 +1,6 @@
-# Function 
+#!/bin/sh
+
+# Function
 function take () {
     mkdir -p $1
     cd $1
@@ -12,11 +14,33 @@ function randomchars() {
     openssl rand -base64 $1
 }
 
+function prkill() {
+    kill $(ps aux | grep $1 | awk '{print $2; exit}')
+}
+
 # Function to source files if they exist
 function zsh_add_file() {
     if [ -f "$ZDOTDIR/$1" ]; then
         source "$ZDOTDIR/$1"
     fi
+}
+
+function add_all_ssh() {
+  eval ssh-agent -s >> /dev/null
+
+  if [ ! -d "${HOME}/.ssh" ]; then
+    echo "No .ssh directory found"
+    return
+  fi
+
+
+  for key in "${HOME}/.ssh"/*; do
+    ext="${key##*.}"
+    if [ "$ext" = "pub" ]; then
+      ssh-add "$key"
+      continue
+    fi
+  done
 }
 
 function zsh_add_plugin() {

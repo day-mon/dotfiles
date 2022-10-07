@@ -24,3 +24,5 @@ zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 
 # Themes
 zsh_add_theme "romkatv/powerlevel10k"
+
+add_all_ssh
