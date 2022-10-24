@@ -36,10 +36,12 @@ function add_all_ssh() {
 
   for key in "${HOME}/.ssh"/*; do
     ext="${key##*.}"
-    if [ "$ext" = "pub" ] || [ "$key" = "${HOME}/.ssh/known_hosts" ] || [ "$key" = "${HOME}/.ssh/known_hosts.old" ]; then
+    if [ "$ext" = "pub" ] ||
+    [ "$key" = "${HOME}/.ssh/known_hosts" ]  ||
+    [ "$key" = "${HOME}/.ssh/known_hosts.old" ] ||
+    [ "$key" = "${HOME}/.ssh/authorized_keys" ]; then
       continue
     fi
-
     ssh-add "$key"
   done
 }

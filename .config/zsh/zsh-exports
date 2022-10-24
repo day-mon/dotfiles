@@ -1,2 +1,3 @@
 export GOPATH="/usr/bin/go/"
-
+export JAVA_HOME="${HOME}/.jdks/corretto-19"
+export PATH="${PATH}:${JAVA_HOME}/bin"

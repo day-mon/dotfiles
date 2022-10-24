@@ -15,7 +15,7 @@ for m in $(xrandr --query | grep -A1 " connected" | awk '{print $1; print $4}' |
 
     if [ $I -eq 3 ]; then
 	    RATE=$m
-	    xrandr --output "$OUTPUT" --mode "$MONITOR_SIZE" --rate "$RATE"
+	    xrandr --output "$OUTPUT" --mode "$MONITOR_SIZE" --rate "$RATE" 
 	    echo "Setting $OUTPUT to $MONITOR_SIZE at $RATE"
 	    I=0
 	    MONITOR_SIZE=""
