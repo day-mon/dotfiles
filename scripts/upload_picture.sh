@@ -15,11 +15,15 @@ if [ ! -e LOG_FILE_NAME ]; then
     touch "${LOG_FILE_NAME}"
 fi
 
+source ${HOME}/.config/zsh/secrets
 
-UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: ""${SCREENSHOT_UPLOAD_AUTH}"" " -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}api/upload | jq '.[]' | jq '.[0]' | sed "s/\"//g" | xsel -ib)
+UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: "${SCREENSHOT_UPLOAD_AUTH}"" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}api/upload | jq '.[]' | jq '.[0]' | sed "s/\"//g")
 
 if [ $? -eq 0  ]; then
     echo "[INFO]: File successfully uploaded on ${DATE} to ${URL} " >> "${LOG_FILE_NAME}"
-else 
+    notify-send "Screenshot successfully uploaded to ${UPLOAD}"
+    echo "${UPLOAD}" | xsel -ib
+else
     echo "[ERROR]: File upload to ${URL} has failed " >> "${LOG_FILE_NAME}"
+    notify-send "Screenshot has been failed to upload"
 fi
