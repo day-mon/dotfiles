@@ -4,14 +4,13 @@ DATE=$(date '+%h_%Y_%d_%I_%m_%S.png');
 LOG_LOCATION="${HOME}/.log/"
 LOG_FILE_NAME="${HOME}/.log/flameshot.log"
 URL="https://upload.montague.im"
-flameshot gui -r > ~/Pictures/"$DATE";
+PICTURE_PATH="${HOME}/Pictures/${DATE}"
+flameshot gui -r > "${PICTURE_PATH}"
 
-if [ $? -ne 0 ]; then
-    notify-send "failed"
+if [ $(wc "${PICTURE_PATH}" | awk '{print $1}') -eq 0 ]; then
+    rm "${PICTURE_PATH}"
     exit
 fi
-
-notify-send "${$?}"
 
 if [ ! -f LOG_LOCATION ]; then
     mkdir -p "${LOG_LOCATION}"
