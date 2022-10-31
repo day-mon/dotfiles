@@ -23,9 +23,10 @@ fi
 
 source ${HOME}/.config/zsh/secrets
 
-UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: "${SCREENSHOT_UPLOAD_AUTH}"" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}/api/upload | jq '.[]' | jq '.[0]' | sed "s/\"//g")
+UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: "${SCREENSHOT_UPLOAD_AUTH}"" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}/api/upload)
 
 if [ $? -eq 0  ]; then
+    UPLOAD=$(jq '.[]' | jq '.[0]' | sed "s/\"//g")
     echo "[INFO]: File successfully uploaded on ${DATE} to ${UPLOAD} " >> "${LOG_FILE_NAME}"
     notify-send "Screenshot successfully uploaded to ${UPLOAD}"
     echo "${UPLOAD}" | xsel -ib
