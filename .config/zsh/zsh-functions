@@ -62,6 +62,7 @@ function zsh_add_theme() {
     THEME_NAME=$(echo $1 | cut -d "/" -f 2)
     if [ -d "$ZDOTDIR/themes/$THEME_NAME" ]; then 
         # For plugins
+	echo "${THEME_NAME} has been loaded!"
         zsh_add_file "themes/$THEME_NAME/$THEME_NAME.zsh-theme"
     else
         git clone "git@github.com:$1.git" "$ZDOTDIR/themes/$THEME_NAME"
