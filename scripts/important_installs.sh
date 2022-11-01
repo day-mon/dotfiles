@@ -18,7 +18,7 @@ print_red() {
 
 
 # POSIX Array
-set -- paru rustc bat go xsel flameshot docker docker-compose zsh nemo neofetch kitty
+set -- paru rustc bat go xsel flameshot docker docker-compose zsh nemo neofetch kitty nvim betterdiscordctl
 
 # Check to see if we are on arch linux
 if [ ! -f /etc/arch-release ]; then
