@@ -33,10 +33,12 @@ symlink() {
 REMOTE_URL=$(git remote get-url origin)
 
 # check if its an ssh url or not
-if [ "${REMOTE_URL:0:4}" = "git@" ]; then
-    git remote set-url origin "${REMOTE_URL/git@/https://}"
+if [ "${REMOTE_URL:0:4}" != "git@" ]; then
+    REMOTE_URL=$(echo "$REMOTE_URL" | sed -e "s/https:\/\//git@/g" -e "s/\.com:/\.com:/g")
+    git remote set-url origin "$REMOTE_URL"
+    printf "SSH URL Check (Swich to SSH)... ${GREEN}OK${NC}\n"
 else
-  printf "SSH URL Check... ${GREEN}OK${NC}\n"
+  printf "SSH URL Check (Already set)... ${GREEN}OK${NC}\n"
 fi
 
 
@@ -56,5 +58,6 @@ symlink "${DOTFILES_DIR}/.zshrc" "${HOME}/.zshrc"
 for val in "${CONFIG_SYM[@]}"; do
   symlink "${DOTFILES_DIR}/.config/${val}" "${HOME}/.config/${val}"
 done
+
 print_green "Finished setting up dotfiles.. Executing important_installs.sh"
 bash "${DOTFILES_DIR}/important_installs.sh"
