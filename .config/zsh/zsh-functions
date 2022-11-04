@@ -43,7 +43,7 @@ function add_all_ssh() {
     if [ "$ssh_key" = "-----BEGIN OPENSSH PRIVATE KEY-----" ]; then
         ssh-add "$key" >> /dev/null 2>&1
         if [ $? -eq 0 ]; then
-            echo "Succesfully Added $key"
+            echo "Succesfully added $key"
         else
             echo "Could not add $key. Error code $?"
         fi
