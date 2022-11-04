@@ -1,13 +1,26 @@
-local options = {
-    backup = false,
-    shiftwidth = 4,
-    cursorline = false,
-    termguicolors = true,
-    number = true,
-    relativenumber = true,
-    smartcase = true
-}
+local o = vim.opt
+local g = vim.g
 
-for key, value in pairs(options) do
-	vim.opt[key] = value
-end
+o.backup = false
+o.cursorline = true
+o.expandtab = true
+o.fileencoding = "utf-8"
+o.hlsearch = false
+o.incsearch = true
+o.laststatus = 3
+o.number = true
+o.relativenumber = true
+o.scrolloff = 8
+o.shiftwidth = 4
+o.showmode = false
+o.showcmd = false
+o.signcolumn = "yes"
+o.softtabstop = 4
+o.swapfile = false
+o.termguicolors = true
+o.tabstop = 4
+o.winbar = "%=%m %f"
+o.wrap = false
+
+g.loaded_netrw = 1
+g.loaded_netrwPlugin = 1
