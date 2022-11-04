@@ -18,7 +18,7 @@ print_red() {
 
 
 # POSIX Array
-set -- paru rustc bat go xsel flameshot docker docker-compose zsh nemo neofetch kitty nvim betterdiscordctl
+set -- paru rustc bat go xsel flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty nvim discord betterdiscordctl
 
 # Check to see if we are on arch linux
 if [ ! -f /etc/arch-release ]; then
@@ -29,7 +29,7 @@ printf "Arch Linux Check... ${GREEN}OK${NC}\n"
 
 UPDATES=$(checkupdates | wc -l)
 
-if [ ! "$UPDATES" -eq 0 ]; then
+if [ "$UPDATES" -ne 0 ]; then
     printf "Attempting to update ${GREEN_UNDERLINE}${UPDATES}${NC} packages\n"
     if [ $(sudo pacman -Syyu --noconfirm --quiet) ]; then
       printf "Update check (${GREEN_UNDERLINE}${UPDATES}${NC} packages)... ${GREEN}OK${NC}"
@@ -44,8 +44,10 @@ for i in "$@"; do
     if ! command -v "$i" > /dev/null 2>&1; then
 
         printf "Installing ${GREEN_UNDERLINE}%s${NC}\n" "$i"
-        if [ ! $(sudo pacman -S "$i" --noconfirm --quiet) -eq 0 ]; then
-           [ ! $(paru -S "$i" --noconfirm --quiet) -eq 0 ] print_red "Failed to install $i"
+        if [ $(sudo pacman -S "$i" --noconfirm --quiet) -ne 0 ]; then
+           if [ $(paru -S "$i" --noconfirm --quiet) -ne 0 ]; then
+               print_red "Failed to install $i"
+           fi
         else
             print_green "Installed ${GREEN_UNDERLINE}$i${NC}"
         fi

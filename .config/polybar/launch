@@ -1,0 +1,10 @@
+#!/bin/env bash
+
+killall -q polybar
+
+
+OTHERS=$(xrandr --query | grep " connected" | cut -d" " -f1)
+
+for m in $OTHERS; do
+    MONITOR=$m polybar -r  &
+done

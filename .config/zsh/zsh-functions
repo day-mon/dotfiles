@@ -28,21 +28,22 @@ function zsh_add_file() {
 function add_all_ssh() {
   eval `ssh-agent` &>/dev/null
 
-  if [ ! -d "${HOME}/.ssh" ]; then
+  if [ ! -d "$HOME/.ssh" ]; then
     echo "No .ssh directory found"
     return
   fi
 
+   files=$(ls "$HOME/.ssh" | wc -l)
+    if [ "$files" -eq 0 ]; then
+      return
+    fi
 
   for key in "${HOME}/.ssh"/*; do
-    ext="${key##*.}"
-    if [ "$ext" = "pub" ] ||
-    [ "$key" = "${HOME}/.ssh/known_hosts" ]  ||
-    [ "$key" = "${HOME}/.ssh/known_hosts.old" ] ||
-    [ "$key" = "${HOME}/.ssh/authorized_keys" ]; then
-      continue
+    ssh_key=$(cat "$key" | head -c 3)
+    if [ "$ssh_key" = "ssh" ]; then
+        ssh-add "$key" >> /dev/null 2>&1
+        echo "Added $key"
     fi
-    ssh-add "$key"
   done
 }
 

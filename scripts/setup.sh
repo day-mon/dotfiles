@@ -48,16 +48,18 @@ fi
 
 # find directory of this script
 DIR="$(cd"$(dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-DOTFILES_DIR="$(dirname "$DIR")"
+DOTFILES_DIR="$(realpath "$DIR")"
 
-CONFIG_SYM=(kitty nvim zsh)
+echo "${DOTFILES_DIR}"
+
+#CONFIG_SYM=(kitty nvim zsh)
 
 # Establish Sym Links
-symlink "${DOTFILES_DIR}/.zshrc" "${HOME}/.zshrc"
+#symlink "${DOTFILES_DIR}/.zshrc" "${HOME}/.zshrc"
 
-for val in "${CONFIG_SYM[@]}"; do
-  symlink "${DOTFILES_DIR}/.config/${val}" "${HOME}/.config/${val}"
-done
+#for val in "${CONFIG_SYM[@]}"; do
+#  symlink "${DOTFILES_DIR}/.config/${val}" "${HOME}/.config/${val}"
+#done
 
-print_green "Finished setting up dotfiles.. Executing important_installs.sh"
-bash "${DOTFILES_DIR}/important_installs.sh"
+#print_green "Finished setting up dotfiles.. Executing important_installs.sh"
+#bash "${DOTFILES_DIR}/important_installs.sh"
