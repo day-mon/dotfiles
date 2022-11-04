@@ -1,7 +1,7 @@
 [user]
 	email = damon@montague.im
 	name = Damon L Montague Jr.
-	signingkey = C8A244AFDF4F1B1A71B43021DC59C03459E73326
+	signingkey = < KEY HERE >
 [commit]
 	gpgSign = true
 [push]
