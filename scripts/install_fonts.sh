@@ -3,6 +3,7 @@
 FONTS=(
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/JetBrainsMono.zip"
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/3270.zip"
+  "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/FiraCode.zip"
 )
 
 if [ ! -d "$HOME/.local/share/fonts" ]; then

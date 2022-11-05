@@ -187,7 +187,6 @@ bindsym $mod+n exec /usr/bin/nemo > /dev/null 2>&1 || /usr/bin/thunar
 # bindsym Print exec scrot ~/%Y-%m-%d-%T-screenshot.png && notify-send "Screenshot saved to ~/$(date +"%Y-%m-%d-%T")-screenshot.png"
 
 # Power Profiles menu switcher (rofi)UPLOAD
-
 bindsym $mod+Shift+p exec ~/.config/polybar/shapes/scripts/powermenu.sh
 
 ##########################################
@@ -288,11 +287,12 @@ exec --no-startup-id protonmail-bridge --no-window
 # Nvidida settings
 exec --no-startup-id nvidia-settings --load-config-only
 
+
 #openrgb
 exec openrgb -p purp
 
 # polybar
-exec_always --no-startup-id ~/.config/polybar/shapes/launch.sh &
+exec_always --no-startup-id ~/.config/polybar/launch &
 
 # autotiling script
 # https://github.com/nwg-piotr/autotiling
@@ -368,6 +368,7 @@ set $yellowbrown	#e1b700
 #client.unfocused	    	$darkblue	$darkblue	$grey		$darkgrey	$darkgrey
 #client.focused_inactive		$darkblue	$darkblue	$grey		$black		$black
 #client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
+client.focused          #530093 #530093 #eeeeee #8b00dd   #8b00dd
 
 #client.focused #C9D1D9 #CCCCC #CCCC #CCCC #CCCCC
 #####################################

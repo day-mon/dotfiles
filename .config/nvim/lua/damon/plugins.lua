@@ -4,7 +4,6 @@ if not status_ok then
     return
 end
 
-vim.notify("noo")
 return packer.startup(function(use)
     -- Packer can manage itself
     use { "wbthomason/packer.nvim" }
@@ -12,6 +11,7 @@ return packer.startup(function(use)
     -- LSP
     use { "neovim/nvim-lspconfig" }
     use { "williamboman/mason.nvim" }
+    use { "simrat39/rust-tools.nvim" }
 
     -- CMP
     use { "hrsh7th/nvim-cmp" }
