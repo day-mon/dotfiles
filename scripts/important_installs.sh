@@ -58,13 +58,13 @@ done
 
 if pacman -Qs "feh" > /dev/null 2>&1; then
    if feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg; then
-       printf "Setting background.... ${GREEN_UNDERLINE}OK${NC}"
+       printf "Setting background.... ${GREEN_UNDERLINE}OK${NC}\n"
     else 
-        printf "Setting background.... ${RED}FAILED${NC} (feh command failed)"
+        printf "Setting background.... ${RED}FAILED${NC} (feh command failed)\n"
     fi
 else 
-    print_red "Setting background.... ${RED}FAILED${NC} (feh command not found)"
+    print_red "Setting background.... ${RED}FAILED${NC} (feh command not found)\n"
 fi
 
 echo "Finished installing important things. Installing fonts :)"
-bash "$HOME/.important/dotfiles/install_fonts.sh"
+bash "$HOME/.important/dotfiles/scripts/install_fonts.sh"
