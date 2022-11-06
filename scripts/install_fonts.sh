@@ -6,6 +6,7 @@ FONTS=(
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/FiraCode.zip"
 )
 
+
 if [ ! -d "$HOME/.local/share/fonts" ]; then
   mkdir -p "$HOME/.local/share/fonts"
 fi

@@ -39,6 +39,11 @@ function add_all_ssh() {
     fi
 
   for key in "${HOME}/.ssh"/*; do
+
+    if [ ! -f "$key" ]; then 
+        continue
+    fi
+
     ssh_key=$(cat "$key" | head -c 35)
     if [ "$ssh_key" = "-----BEGIN OPENSSH PRIVATE KEY-----" ]; then
         ssh-add "$key" >> /dev/null 2>&1
