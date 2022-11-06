@@ -54,6 +54,12 @@ alias free='free -m' # show sizes in MB
 # get top process eating memory
 alias psmem='ps auxf | sort -nr -k 4 | head -5'
 
+# update grub
+alias update-grub="sudo grub-mkconfig -o /boot/grub/grub.cfg"
+
+# get signing key
+alias get-gpg-sk="gpg --list-keys | awk 'FNR > 3 {print $1; exit}'"
+
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
 

@@ -18,7 +18,7 @@ print_red() {
 
 
 # POSIX Array
-set -- paru rustc bat go xsel flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty nvim discord betterdiscordctl
+set -- paru bat go xsel feh flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git
 
 # Check to see if we are on arch linux
 if [ ! -f /etc/arch-release ]; then
@@ -31,21 +31,20 @@ UPDATES=$(checkupdates | wc -l)
 
 if [ "$UPDATES" -ne 0 ]; then
     printf "Attempting to update ${GREEN_UNDERLINE}${UPDATES}${NC} packages\n"
-    if [ $(sudo pacman -Syyu --noconfirm --quiet) ]; then
-      printf "Update check (${GREEN_UNDERLINE}${UPDATES}${NC} packages)... ${GREEN}OK${NC}"
+    if [ "$(sudo pacman -Syyu --noconfirm --quiet)" ]; then
+      printf "Update check (${GREEN_UNDERLINE}${UPDATES}${NC} packages)... ${GREEN}OK${NC}\n"
     else
-      printf "Update check (Not successful).. ${RED}FAILED${NC}";
+      printf "Update check (Not successful).. ${RED}FAILED${NC}\n";
     fi
 else
-    printf "Update check (Nothing to update).. ${GREEN}OK${NC}\n"
+     printf "Update check (Nothing to update).. ${GREEN}OK${NC}\n"
 fi
 
 for i in "$@"; do
-    if ! command -v "$i" > /dev/null 2>&1; then
-
+    if ! pacman -Qs "$i" > /dev/null 2>&1; then
         printf "Installing ${GREEN_UNDERLINE}%s${NC}\n" "$i"
-        if [ $(sudo pacman -S "$i" --noconfirm --quiet) -ne 0 ]; then
-           if [ $(paru -S "$i" --noconfirm --quiet) -ne 0 ]; then
+        if [ ! "$(sudo pacman -S "$i" --noconfirm --quiet)" ]; then
+           if [ ! "$(yay -S "$i" --noconfirm --quiet)" ]; then
                print_red "Failed to install $i"
            fi
         else
@@ -55,3 +54,17 @@ for i in "$@"; do
         print_yellow "$i is already installed @ $(command -v "$i")"
     fi
 done
+
+
+if pacman -Qs "feh" > /dev/null 2>&1; then
+   if feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg; then
+       printf "Setting background.... ${GREEN_UNDERLINE}OK${NC}"
+    else 
+        printf "Setting background.... ${RED}FAILED${NC} (feh command failed)"
+    fi
+else 
+    print_red "Setting background.... ${RED}FAILED${NC} (feh command not found)"
+fi
+
+echo "Finished installing important things. Installing fonts :)"
+bash "$HOME/.important/dotfiles/install_fonts.sh"

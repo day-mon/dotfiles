@@ -7,7 +7,7 @@ URL="https://upload.montague.im"
 PICTURE_PATH="${HOME}/Pictures/${DATE}"
 flameshot gui -r > "${PICTURE_PATH}"
 
-if [ $(wc "${PICTURE_PATH}" | awk '{print $1}') -eq 0 ]; then
+if [ "$(wc "${PICTURE_PATH}" | awk '{print $1}')" -eq 0 ]; then
     rm "${PICTURE_PATH}"
     exit
 fi
@@ -21,9 +21,10 @@ if [ ! -e LOG_FILE_NAME ]; then
     touch "${LOG_FILE_NAME}"
 fi
 
-source ${HOME}/.config/zsh/secrets
+# just sourcing
+. "$HOME"/.config/zsh/secrets
 
-UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: "${SCREENSHOT_UPLOAD_AUTH}"" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}/api/upload)
+UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: ""${SCREENSHOT_UPLOAD_AUTH}""" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}/api/upload)
 
 
 if [ $? -eq 0  ]; then

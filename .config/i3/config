@@ -90,7 +90,7 @@ bindsym $mod+r mode "resize"
 bindsym $mod+Return exec kitty 
 
 # update packages 
-bindsym $mod+u exec kitty -e paru
+bindsym $mod+u exec kitty -e yay
 
 #kill focused window
 bindsym $mod+q kill
@@ -184,10 +184,10 @@ bindsym $mod+p exec /usr/local/bin/switch-audio-port
 ## App shortcuts
 bindsym $mod+w exec /usr/bin/firefox
 bindsym $mod+n exec /usr/bin/nemo > /dev/null 2>&1 || /usr/bin/thunar
-# bindsym Print exec scrot ~/%Y-%m-%d-%T-screenshot.png && notify-send "Screenshot saved to ~/$(date +"%Y-%m-%d-%T")-screenshot.png"
 
 # Power Profiles menu switcher (rofi)UPLOAD
-bindsym $mod+Shift+p exec ~/.config/polybar/shapes/scripts/powermenu.sh
+bindsym $mod+Shift+p exec ~/.config/rofi/powermenu/powermenu &
+
 
 ##########################################
 # configuration for workspace behaviour: #
@@ -210,9 +210,10 @@ set $ws10 "10"
 # bind program to workspace and focus to them on startup:
 assign [class="kitty"] $ws1
 assign [class="(?i)firefox"] $ws2
-assign [class="Webstorm"] $ws6
 assign [class="Discord"] $ws3
 assign [class="Steam"] $ws5
+assign [class="steam"] $ws5
+assign [class="jetbrains-"] $ws6
 
 # automatic set focus new window if it opens on another workspace then the current:
 for_window [class=kitty] focus
@@ -269,7 +270,7 @@ exec --no-startup-id dex --autostart --environment i3
 exec --no-startup-id ~/.important/dotfiles/scripts/set_monitors.sh
 
 # Set BG
-exec --no-startup-id feh --bg-fill ~/Downloads/wallpaper.jpg
+exec --no-startup-id feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg
 
 # xscreensaver
 # https://www.jwz.org/xscreensaver
@@ -287,9 +288,13 @@ exec --no-startup-id protonmail-bridge --no-window
 # Nvidida settings
 exec --no-startup-id nvidia-settings --load-config-only
 
-
 #openrgb
 exec openrgb -p purp
+
+# Discord
+exec discord &
+
+
 
 # polybar
 exec_always --no-startup-id ~/.config/polybar/launch &
@@ -312,8 +317,6 @@ exec_always --no-startup-id autotiling
 # networkmanager-applet
 #exec --no-startup-id nm-applet
 
-#clipman-applet
-exec --no-startup-id xfce4-clipman
 
 ##################
 # floating rules #
@@ -377,9 +380,6 @@ client.focused          #530093 #530093 #eeeeee #8b00dd   #8b00dd
 
 ## rofi bindings fancy application menu ($mod+d /F9 optional disabled)
 
-bindsym $mod+d exec --no-startup-id ~/.config/rofi/launcher/launcher
+bindsym $mod+d exec --no-startup-id ~/.config/rofi/launcher/launcher &
 
-## rofi bindings for window menu ($mod+t /F10 optional disabled)
-bindsym $mod+t exec rofi -show window -config ~/.config/rofi/rofidmenu.rasi
 
-bindsym $mod+c exec --no-startup-id ~/.config/polybar/shapes/scripts/color-switch.sh
