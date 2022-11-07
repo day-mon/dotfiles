@@ -18,6 +18,10 @@ function prkill() {
     kill $(ps aux | grep $1 | awk '{print $2; exit}')
 }
 
+function drive-uuid() {
+    sudo blkid $1 | awk -F '"' '{print $6; exit}'
+}
+
 # Function to source files if they exist
 function zsh_add_file() {
     if [ -f "$ZDOTDIR/$1" ]; then
