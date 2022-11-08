@@ -7,6 +7,7 @@ source "$ZDOTDIR/zsh-functions"
 
 # Colors
 autoload -Uz colors && colors
+autoload -Uz compinit && compinit
 
 # Sourced files
 zsh_add_file "zsh-exports"
