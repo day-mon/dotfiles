@@ -2,4 +2,4 @@ packer_installed.lua
 .idea
 secrets
 .gitconfig
-
+.zcompdump
