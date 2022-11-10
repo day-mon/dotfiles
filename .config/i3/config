@@ -24,7 +24,12 @@ workspace_layout default
 ##############################
 
 #border indicator on windows:
-new_window pixel 1
+new_window pixel 12
+new_float pixel 12
+
+
+
+
 
 # thin borders
 # hide_edge_borders both
@@ -87,10 +92,10 @@ bindsym $mod+r mode "resize"
 ######################################
 
 # start a terminal
-bindsym $mod+Return exec kitty 
+bindsym $mod+Return exec kitty  
 
-# update packages 
-bindsym $mod+u exec kitty -e yay
+# update packages and keep terminal open for 10 seconds
+bindsym $mod+u exec kitty -e --hold sh -c "yay && echo You have && $HOME/.config/polybar/scripts/updates && echo updates left"
 
 #kill focused window
 bindsym $mod+q kill
@@ -215,6 +220,7 @@ assign [class="(?i)steam"] $ws5
 assign [class="jetbrains-"] $ws6
 assign [class="(?i)geary"] $ws8
 
+
 # automatic set focus new window if it opens on another workspace then the current:
 for_window [class=kitty] focus
 for_window [class=(?i)firefox] focus
@@ -318,15 +324,16 @@ set $grey		#b0b5bd
 set $mediumgrey		#8b8b8b
 set $yellowbrown	#e1b700
 
-# define colors for windows:
-#class		        	    border		bground		text		indicator	child_border
-#client.focused		    	$lightblue	$darkblue	$white		$mediumgrey	$mediumgrey
-#client.unfocused	    	$darkblue	$darkblue	$grey		$darkgrey	$darkgrey
-#client.focused_inactive		$darkblue	$darkblue	$grey		$black		$black
-#client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
-client.focused          #530093 #530093 #eeeeee #8b00dd   #8b00dd
 
-#client.focused #C9D1D9 #CCCCC #CCCC #CCCC #CCCCC
+# make boarders white for focused windows and grey for unfocused windows
+client.focused          $white $white $white $white $white
+client.unfocused        $grey $grey $grey $grey $grey
+client.focused_inactive $grey $grey $grey $grey $grey
+client.urgent           $white $white $white $white $white
+
+# set thickness of boarders
+
+
 
 bindsym $mod+d exec --no-startup-id ~/.config/rofi/launcher/launcher &
 
