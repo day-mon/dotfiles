@@ -24,21 +24,16 @@ workspace_layout default
 ##############################
 
 #border indicator on windows:
-new_window pixel 12
-new_float pixel 12
+#new_window pixel 10
+#new_float pixel 12
 
-
-
-
-
-# thin borders
-# hide_edge_borders both
-
-# Set inner/outer gaps
+# window boarders
 gaps inner 40
 gaps outer 15
 gaps top -10
 gaps bottom 0
+#focus_follows_mouse yes
+
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -95,7 +90,7 @@ bindsym $mod+r mode "resize"
 bindsym $mod+Return exec kitty  
 
 # update packages and keep terminal open for 10 seconds
-bindsym $mod+u exec kitty -e --hold sh -c "yay && echo You have && $HOME/.config/polybar/scripts/updates && echo updates left"
+bindsym $mod+u exec kitty -e --hold sh -c "yay && flatpak update && echo You have && $HOME/.config/polybar/scripts/updates && echo updates left"
 
 #kill focused window
 bindsym $mod+q kill
@@ -187,7 +182,7 @@ bindsym XF86AudioPrev exec playerctl previous
 bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts
-bindsym $mod+w exec /usr/bin/firefox
+bindsym $mod+w exec flatpak run io.gitlab.librewolf-community 
 bindsym $mod+n exec /usr/bin/nemo > /dev/null 2>&1 || /usr/bin/thunar
 
 # Power Profiles menu switcher (rofi)UPLOAD
@@ -211,24 +206,23 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 
-
 # bind program to workspace and focus to them on startup:
 assign [class="kitty"] $ws1
-assign [class="(?i)firefox"] $ws2
+assign [class="(?i)librewolf"] $ws2
 assign [class="(?i)discord"] $ws3
 assign [class="(?i)steam"] $ws5
-assign [class="jetbrains-"] $ws6
-assign [class="(?i)geary"] $ws8
+assign [class="jetbrains-"] $ws6 
+assign [class="(?i)mailspring"] $ws8
 
 
 # automatic set focus new window if it opens on another workspace then the current:
-for_window [class=kitty] focus
-for_window [class=(?i)firefox] focus
+for_window [class="^.*"] border 1pixel
+for_window [class=".*"] border pixel 10
+for_window [class=kitty] focus 1pixel
+for_window [class=(?i)firefox] focus 1pixel
 
-##############
-# compositor #
-##############
-# picom 
+exec echo $(date) >> ~/.log/startup.log
+
 exec_always --no-startup-id picom -b
 
 #get auth work with polkit-gnome
@@ -243,23 +237,20 @@ exec kitty
 # steam
 exec steam
 
-# firefox
-exec firefox
+#librewolf
+exec flatpak run io.gitlab.librewolf-community
 
 # protonvpn 
-exec protonvpn-cli c -p tcp -f 
-
-# start a script to setup displays
-exec --no-startup-id ~/.important/dotfiles/scripts/set_monitors.sh
+exec protonvpn-cli c -p udp -f >> ~/.log/startup.log
 
 # Set BG
-exec --no-startup-id feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg
+exec --no-startup-id feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg >> ~/.log/startup.log
 
 # Desktop notifications
-exec --no-startup-id dbus-launch dunst --config ~/.config/dunst/dunstrc
+exec --no-startup-id dbus-launch dunst --config ~/.config/dunst/dunstrc >> ~/.log/startup.log
 
 # protonbridge
-exec --no-startup-id protonmail-bridge --no-window
+exec --no-startup-id protonmail-bridge --no-window >> ~/.log/startup.log
 
 # Nvidida settings
 exec --no-startup-id nvidia-settings --load-config-only
@@ -270,12 +261,14 @@ exec openrgb -p purp
 # Discord
 exec discord &
 
-# bluemail client
-exec geary 
+# mailspring client
+exec mailspring 
 
 # polybar
 exec_always --no-startup-id ~/.config/polybar/launch &
 
+# start monitors setup script
+exec --no-startup-id ~/.important/dotfiles/scripts/set_monitors.sh >> ~/.log/startup.log
 
 ##################
 # floating rules #
@@ -326,14 +319,15 @@ set $yellowbrown	#e1b700
 
 
 # make boarders white for focused windows and grey for unfocused windows
-client.focused          $white $white $white $white $white
-client.unfocused        $grey $grey $grey $grey $grey
-client.focused_inactive $grey $grey $grey $grey $grey
-client.urgent           $white $white $white $white $white
+#client.focused          $white $white $white $white $white
+#client.unfocused        $grey $grey $grey $grey $grey
+#client.focused_inactive $grey $grey $grey $grey $grey
+#client.urgent           $white $white $white $white $white
 
-# set thickness of boarders
+client.focused #ffffff #ffffff #ffffff #ffffff #ffffff
 
 
 
 bindsym $mod+d exec --no-startup-id ~/.config/rofi/launcher/launcher &
 
+exec echo "===========" >> ~/.log/startup.log
