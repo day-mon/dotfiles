@@ -1,12 +1,3 @@
-#######################
-# config starts here: #
-#######################
-
-# Font for window titles. Will also be used by the bar unless a different font
-# is used in the bar {} block below.
-# This font is widely installed, provides lots of unicode glyphs, right-to-left
-# text rendering and scalability on retina/hidpi displays (thanks to pango).
-
 font pango: Jetbrains Mono Medium 12
 
 # Mod key is ALT
@@ -24,15 +15,15 @@ workspace_layout default
 ##############################
 
 #border indicator on windows:
-#new_window pixel 10
-#new_float pixel 12
+new_window pixel 10
+new_float pixel 12
 
 # window boarders
 gaps inner 40
 gaps outer 15
 gaps top -10
 gaps bottom 0
-#focus_follows_mouse yes
+focus_follows_mouse yes
 
 
 # Use Mouse+$mod to drag floating windows to their wanted position
@@ -108,7 +99,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+s exec ~/.important/dotfiles/scripts/upload_picture.sh
 
 # restart i3 inplace (preserves your layout/session, can be used to update i3)
-bindsym $mod+Shift+r restart
+bindsym $mod+Shift+r restart && killall -q polybar && ~/.config/polybar/launch &
 
 bindsym $mod+Ctrl+greater move workspace to output right
 bindsym $mod+Ctrl+less move workspace to output left
@@ -217,7 +208,6 @@ assign [class="(?i)mailspring"] $ws8
 
 # automatic set focus new window if it opens on another workspace then the current:
 for_window [class="^.*"] border 1pixel
-for_window [class=".*"] border pixel 10
 for_window [class=kitty] focus 1pixel
 for_window [class=(?i)firefox] focus 1pixel
 
@@ -270,19 +260,9 @@ exec_always --no-startup-id ~/.config/polybar/launch &
 # start monitors setup script
 exec --no-startup-id ~/.important/dotfiles/scripts/set_monitors.sh >> ~/.log/startup.log
 
-##################
-# floating rules #
-##################
-
-# set floating (nontiling) for apps needing it
-for_window [class="Yad" instance="yad"] floating enable
-for_window [class="Galculator" instance="galculator"] floating enable
-for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
-
 # set floating (nontiling) for special apps
 for_window [class="Xsane" instance="xsane"] floating enable
 for_window [class="Pavucontrol" instance="pavucontrol"] floating enable
-for_window [class="qt5ct" instance="qt5ct"] floating enable
 for_window [class="Blueberry.py" instance="blueberry.py"] floating enable
 for_window [class="Bluetooth-sendto" instance="bluetooth-sendto"] floating enable
 for_window [class="Pamac-manager"] floating enable
@@ -293,12 +273,6 @@ for_window [class="Steam" title="^Steam$"] floating disable
 # set border of floating window
 for_window [class="urxvt"] border pixel 1
 
-# set size of floating window
-#for_window [window_role="(?i)GtkFileChooserDialog"] resize set 640 480 #to set size of file choose dialog
-for_window [class=".*"] border pixel 0
-
-# set position of floating window
-#for_window [class=".*"] move position center
 
 ######################################
 # color settings for bar and windows #
@@ -319,12 +293,11 @@ set $yellowbrown	#e1b700
 
 
 # make boarders white for focused windows and grey for unfocused windows
-#client.focused          $white $white $white $white $white
-#client.unfocused        $grey $grey $grey $grey $grey
-#client.focused_inactive $grey $grey $grey $grey $grey
-#client.urgent           $white $white $white $white $white
+client.focused          $grey $grey $grey $grey $grey
+client.unfocused        $black $black $black $black $black
+client.focused_inactive $grey $grey $grey $grey $grey
+client.urgent           $white $white $white $white $white
 
-client.focused #ffffff #ffffff #ffffff #ffffff #ffffff
 
 
 

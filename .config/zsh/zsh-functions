@@ -6,16 +6,56 @@ function take () {
     cd $1
 }
 
+function sizeofdr() {
+    sudo du -sh $1
+}
+
 function gpg-export () {
     gpg --armor --export $1
+}
+
+function kill-port() {
+    PID=$(lsof -i tcp:$1 | awk 'FNR==2{print $2;exit}')
+    kill_pid ""$PID"" 
 }
 
 function randomchars() {
     openssl rand -base64 $1
 }
 
+function prkillro() {
+    prkill $1
+    $1 & >> /dev/null 2>&1
+}
+
 function prkill() {
-    kill $(ps aux | grep $1 | awk '{print $2; exit}')
+    PID=$(ps aux | grep $1 | awk '{print $2; exit}')
+    GREP_CHECK=$(ps aux | grep $1 | awk '{print $11; exit}')
+
+    if [ "$GREP_CHECK" = "grep" ]; then
+        echo "No process running named $1"
+        exit
+    fi
+
+    kill_pid ""$PID""
+}
+
+function change_to_ssh_repo() {
+    REMOTE_URL=$(git remote get-url origin)
+
+    if [ "${$?}" -ne 0 ]; then
+        echo "Not in a git repo"
+        exit
+    fi
+
+    # check if its an ssh url or not
+    if  [ "${REMOTE_URL:0:4}" != "git@" ]; then
+        REMOTE_URL=$(echo "$REMOTE_URL" | sed -e "s/https:\/\//git@/g" -e "s/\.com:/\.com:/g")
+        git remote set-url origin "$REMOTE_URL"
+        printf "SSH URL Check (Swich to SSH)... ${GREEN}OK${NC}\n"
+    else
+        printf "SSH URL Check (Already set)... ${GREEN}OK${NC}\n"
+    fi
 }
 
 function drive-uuid() {
@@ -26,6 +66,21 @@ function drive-uuid() {
 function zsh_add_file() {
     if [ -f "$ZDOTDIR/$1" ]; then
         source "$ZDOTDIR/$1"
+    fi
+}
+
+function kill_pid() {  
+    PID=$1
+
+    if [ -z "$PID" ]; then 
+        echo "No process to kill"
+        exit
+    fi
+
+    if [ ! $(kill -9 "$PID") ]; then
+        echo "PID: $PID, has been killed :)"
+    else
+        echo "PID $PID, has not been killed :(. Error ${$?}"
     fi
 }
 
