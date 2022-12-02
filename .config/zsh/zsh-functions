@@ -15,6 +15,7 @@ function gpg-export () {
 }
 
 function kill-port() {
+    local PID
     PID=$(lsof -i tcp:$1 | awk 'FNR==2{print $2;exit}')
     kill_pid ""$PID"" 
 }
@@ -29,27 +30,22 @@ function prkillro() {
 }
 
 function prkill() {
-    PID=$(ps aux | grep $1 | awk '{print $2; exit}')
-    GREP_CHECK=$(ps aux | grep $1 | awk '{print $11; exit}')
-
-    if [ "$GREP_CHECK" = "grep" ]; then
-        echo "No process running named $1"
-        exit
-    fi
-
-    kill_pid ""$PID""
+    local PID
+    PID=$(pgrep $1)
+    kill_pid "$PID" $1
 }
 
 function change_to_ssh_repo() {
+    local REMOTE_URL
     REMOTE_URL=$(git remote get-url origin)
 
-    if [ "${$?}" -ne 0 ]; then
+    if [ "$?" -ne 0 ]; then
         echo "Not in a git repo"
-        exit
+        return 1
     fi
 
     # check if its an ssh url or not
-    if  [ "${REMOTE_URL:0:4}" != "git@" ]; then
+    if [[ "$REMOTE_URL" == git@* ]]; then
         REMOTE_URL=$(echo "$REMOTE_URL" | sed -e "s/https:\/\//git@/g" -e "s/\.com:/\.com:/g")
         git remote set-url origin "$REMOTE_URL"
         printf "SSH URL Check (Swich to SSH)... ${GREEN}OK${NC}\n"
@@ -58,8 +54,9 @@ function change_to_ssh_repo() {
     fi
 }
 
+
 function drive-uuid() {
-    sudo blkid $1 | awk -F '"' '{print $6; exit}'
+    sudo blkid -o value -s UUID $1
 }
 
 # Function to source files if they exist
@@ -69,20 +66,51 @@ function zsh_add_file() {
     fi
 }
 
-function kill_pid() {  
+function kill_pid() {
+    local PID
     PID=$1
+    local PNAME
+    PNAME=$2
 
+    # Check if the PID is valid
     if [ -z "$PID" ]; then 
-        echo "No process to kill"
-        exit
+        echo "No process found with name $PNAME"
+        return 1
     fi
 
-    if [ ! $(kill -9 "$PID") ]; then
-        echo "PID: $PID, has been killed :)"
+    # Attempt to kill the process with the SIGTERM signal
+    kill -s SIGTERM "$PID"
+
+    if [ $? -eq 0 ]; then
+        printf "PID: %d, has been sent the SIGTERM signal :)\n" "$PID"
+        
+        if ! pgrep $PID; then
+            printf "PID: %d, has been killed :)\n" "$PID"
+            return 1
+        fi
     else
-        echo "PID $PID, has not been killed :(. Error ${$?}"
+        printf "PID %d, could not be sent the SIGTERM signal :(. Error $?\n" "$PID"
+        return 1
+    fi
+
+    # Wait 5 seconds
+    sleep 5
+
+    # Check if the process is still alive
+    if kill -0 "$PID" 2> /dev/null; then
+        # If the process is still alive, kill it with the SIGKILL signal
+        kill -s SIGKILL "$PID"
+
+        if [ $? -eq 0 ]; then
+            printf "PID: %d, has been killed with the SIGKILL signal :)\n" "$PID"
+        else
+            printf "PID %d, could not be killed with the SIGKILL signal :(. Error $?\n" "$PID"
+            return 1
+        fi
     fi
 }
+
+
 
 function add_all_ssh() {
   eval `ssh-agent` &>/dev/null
