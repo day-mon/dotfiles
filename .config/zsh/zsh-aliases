@@ -1,11 +1,11 @@
 #!/bin/sh
-if [[ $(ls /usr/bin | grep -Fx "nvim") ]]; then
+if command -v nvim > /dev/null; then
 	alias vi=nvim
 	alias v="nvim"
 fi
 
-if [[ $(ls /usr/bin | grep -Fx "pacman") ]]; then
-	alias update-mirrors="reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && yay -Syyu"
+if command -v pacman > /dev/null; then
+	alias update-mirrors="sudo reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && yay -Syyu"
 	alias remove-orphans="pacman -Rns $(pacman -Qdtq)"
 	alias pac="sudo pacman"
 
@@ -16,8 +16,12 @@ if [[ $(ls /usr/bin | grep -Fx "pacman") ]]; then
 	alias mirrora="sudo reflector --latest 50 --number 20 --sort age --save /etc/pacman.d/mirrorlist"
 fi
 
-if [[ $(ls /usr/bin | grep -Fx "bat") ]]; then
+if command -v bat > /dev/null; then
     alias cat="bat"
+fi
+
+if command -v btop > /dev/null; then
+    alias htop=btop
 fi
 
 alias mkdir="mkdir -pv"
