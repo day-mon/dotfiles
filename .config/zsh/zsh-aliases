@@ -67,10 +67,15 @@ alias get-gpg-sk="gpg --list-keys | awk 'FNR > 3 {print $1; exit}'"
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
 
-alias ls='ls --color=auto'
-alias ll='ls -lav --ignore=..'   # show long listing of all except ".."
-alias l='ll'   # show long listing but no hidden dotfiles except "."
-
+if command -v exa > /dev/null; then
+    alias ls='exa --icons --long --header --git'
+    alias l="ls -all"
+    alias ll=ls
+else 
+    alias ls='ls --color=auto'
+    alias ll='ls -lav --ignore=..'   # show long listing of all except ".."
+    alias l='ll'   # show long listing but no hidden dotfiles except "."
+fi
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word

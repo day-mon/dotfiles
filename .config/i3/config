@@ -2,7 +2,6 @@ font pango: Jetbrains Mono Medium 12
 
 # Mod key is ALT
 set $mod Mod1
-
 #####################
 # workspace layout: #
 #####################
@@ -198,10 +197,11 @@ set $ws9 "9"
 set $ws10 "10"
 
 # bind program to workspace and focus to them on startup:
-assign [class="kitty"] $ws1
+assign [class="(?i)kitty"] $ws1
 assign [class="(?i)librewolf"] $ws2
 assign [class="(?i)discord"] $ws3
 assign [class="(?i)steam"] $ws5
+assign [class="(?i)youtube"] $ws9
 assign [class="jetbrains-"] $ws6 
 assign [class="(?i)mailspring"] $ws8
 
@@ -213,7 +213,7 @@ for_window [class=(?i)firefox] focus 1pixel
 
 exec echo $(date) >> ~/.log/startup.log
 
-exec_always --no-startup-id picom -b
+exec_always --no-startup-id compton
 
 #get auth work with polkit-gnome
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
@@ -231,7 +231,10 @@ exec steam
 exec flatpak run io.gitlab.librewolf-community
 
 # protonvpn 
-exec protonvpn-cli c -p udp -f >> ~/.log/startup.log
+#exec protonvpn-cli c -p udp -f >> ~/.log/startup.log
+
+# yt music
+exec /opt/YoutubeMusic/YoutubeMusic
 
 # Set BG
 exec --no-startup-id feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg >> ~/.log/startup.log
