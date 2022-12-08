@@ -1,5 +1,6 @@
 local status_ok, mason = pcall(require, "mason")
 if not status_ok then
+    vim.notify("lsp not loaded")
     return
 end
 

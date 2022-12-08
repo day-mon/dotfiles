@@ -18,7 +18,7 @@ print_red() {
 
 
 # POSIX Array
-set -- paru bat go xsel feh flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git
+set -- paru topgrade bat exa go xsel feh flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git youtubemusic
 
 # Check to see if we are on arch linux
 if [ ! -f /etc/arch-release ]; then
@@ -29,9 +29,9 @@ printf "Arch Linux Check... ${GREEN}OK${NC}\n"
 
 UPDATES=$(checkupdates | wc -l)
 
-if [ "$UPDATES" -ne 0 ]; then
+if "$UPDATES" -ne 0; then
     printf "Attempting to update ${GREEN_UNDERLINE}${UPDATES}${NC} packages\n"
-    if [ "$(sudo pacman -Syyu --noconfirm --quiet)" ]; then
+    if sudo pacman -Syyu --noconfirm --quiet; then
       printf "Update check (${GREEN_UNDERLINE}${UPDATES}${NC} packages)... ${GREEN}OK${NC}\n"
     else
       printf "Update check (Not successful).. ${RED}FAILED${NC}\n";
@@ -43,8 +43,8 @@ fi
 for i in "$@"; do
     if ! pacman -Qs "$i" > /dev/null 2>&1; then
         printf "Installing ${GREEN_UNDERLINE}%s${NC}\n" "$i"
-        if [ ! "$(sudo pacman -S "$i" --noconfirm --quiet)" ]; then
-           if [ ! "$(yay -S "$i" --noconfirm --quiet)" ]; then
+        if ! sudo pacman -S "$i" --noconfirm --quiet; then
+           if ! yay -S "$i" --noconfirm --quiet; then
                print_red "Failed to install $i"
            fi
         else
