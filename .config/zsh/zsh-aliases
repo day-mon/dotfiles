@@ -2,6 +2,7 @@
 if command -v nvim > /dev/null; then
 	alias vi=nvim
 	alias v="nvim"
+    alias nvimrc='nvim ~/.config/nvim/'
 fi
 
 if command -v pacman > /dev/null; then
@@ -20,6 +21,10 @@ if command -v bat > /dev/null; then
     alias cat="bat"
 fi
 
+if command -v topgrade > /dev/null; then
+    alias update=topgrade
+fi
+
 if command -v btop > /dev/null; then
     alias htop=btop
 fi
@@ -35,10 +40,12 @@ alias untar="tar -xvf"
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 alias rmsym="rm -i"
 
-alias dcd="docker-compose down"
-alias du="docker-compose pull && docker-compose down && docker-compose up -d"
+if command -v docker-compose > /dev/null; then
+    alias dcd="docker-compose down"
+    alias du="docker-compose pull && docker-compose down && docker-compose up -d"
+fi
+
 alias zsh-update-plugins="find "$ZDOTDIR/plugins" -type d -exec test -e '{}/.git' ';' -print0 | xargs -I {} -0 git -C {} pull -q"
-alias nvimrc='nvim ~/.config/nvim/'
 
 
 # Colorize grep output (good for log files)

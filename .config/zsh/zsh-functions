@@ -31,7 +31,7 @@ function prkillro() {
 
 function prkill() {
     local PID
-    PID=$(pgrep $1)
+    PID=$(pgrep $1 | awk '{print $1; exit}')
     kill_pid "$PID" $1
 }
 
