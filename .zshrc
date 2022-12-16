@@ -1,6 +1,7 @@
 export ZDOTDIR=$HOME/.config/zsh
-HISTFILE=~/.zshrc_history
-setopt appendhistory
+SAVEHIST=1000  # Save most-recent 1000 linesV
+HISTFILE=${HOME}/.zshrc_history
+setopt inc_append_history share_history
 
 # Source useful functions (from chris@machine)
 source "$ZDOTDIR/zsh-functions"
@@ -25,3 +26,5 @@ add_all_ssh
 
 eval "$(starship init zsh)"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+
