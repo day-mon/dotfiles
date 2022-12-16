@@ -1,11 +1,11 @@
 #!/bin/sh
-if hash nvim > /dev/null; then
+if hash nvim >> /dev/null 2&>1; then
 	alias vi=nvim
 	alias v="nvim"
     alias nvimrc='nvim ~/.config/nvim/'
 fi
 
-if hash pacman > /dev/null; then
+if hash pacman >> /dev/null 2&>1; then
 	alias update-mirrors="sudo reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && yay -Syyu"
 	alias remove-orphans="pacman -Rns $(pacman -Qdtq)"
 	alias pac="sudo pacman"
@@ -17,15 +17,15 @@ if hash pacman > /dev/null; then
 	alias mirrora="sudo reflector --latest 50 --number 20 --sort age --save /etc/pacman.d/mirrorlist"
 fi
 
-if hash bat > /dev/null; then
+if hash bat >> /dev/null 2&>1; then
     alias cat="bat"
 fi
 
-if hash topgrade > /dev/null; then
+if hash topgrade >> /dev/null 2&>1; then
     alias update=topgrade
 fi
 
-if hash btop > /dev/null; then
+if hash btop >> /dev/null 2&>1; then
     alias htop=btop
 fi
 
@@ -40,7 +40,7 @@ alias untar="tar -xvf"
 alias gl="git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 alias rmsym="rm -i"
 
-if hash docker-compose > /dev/null; then
+if hash docker-compose >> /dev/null 2&>1; then
     alias dcd="docker-compose down"
     alias du="docker-compose pull && docker-compose down && docker-compose up -d"
 fi
@@ -74,7 +74,7 @@ alias get-gpg-sk="gpg --list-keys | awk 'FNR > 3 {print $1; exit}'"
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
 
-if hash exa > /dev/null; then
+if hash exa >> /dev/null 2&>1; then
     alias ls='exa --icons --long --header --git'
     alias l="ls -all"
     alias ll=ls

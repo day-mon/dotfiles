@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+if [ "$(uname)" == "Darwin" ]; then
+    brew tap homebrew/cask-fonts
+    brew install --cask font-hack-nerd-font
+    echo "Fonts installed"
+    exit
+fi
 
 FONTS=(
   "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/JetBrainsMono.zip"
