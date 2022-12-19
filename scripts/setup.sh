@@ -19,14 +19,14 @@ print_red() {
 symlink() {
   # check if sym link exists
   if [ "$(readlink "$2")" ]; then
-    print_yellow "$2 is already symlinked to $(readlink "$2")"
+    print_yellow "🔗 $2 is already symlinked to $(readlink "$2")"
     return
   fi
 
   if ln -s "$1" "$2" >> /dev/null 2>&1; then
-    printf "Symlinked ${GREEN_UNDERLINE}$1${NC} to ${GREEN_UNDERLINE}$2${NC}\n"
+    printf "🔗 Symlinked ${GREEN_UNDERLINE}$1${NC} to ${GREEN_UNDERLINE}$2${NC}\n"
   else
-    printf "Symlinked failed ${RED_UNDERLINE}$1${NC} to ${RED_UNDERLINE}$2${NC}\n"
+    printf "🚫 Symlink failed ${RED_UNDERLINE}$1${NC} to ${RED_UNDERLINE}$2${NC}\n"
   fi
 }
 
@@ -36,9 +36,9 @@ REMOTE_URL=$(git remote get-url origin)
 if  [ "${REMOTE_URL:0:4}" != "git@" ]; then
     REMOTE_URL=$(echo "$REMOTE_URL" | sed -e "s/https:\/\//git@/g" -e "s/\.com:/\.com:/g")
     git remote set-url origin "$REMOTE_URL"
-    printf "SSH URL Check (Swich to SSH)... ${GREEN}OK${NC}\n"
+    printf "🔐 SSH URL Check (Switching to SSH)... ${GREEN}✅${NC}\n"
 else
-  printf "SSH URL Check (Already set)... ${GREEN}OK${NC}\n"
+  printf "🔐 SSH URL Check (Already set)... ${GREEN}✅${NC}\n"
 fi
 
 
@@ -47,7 +47,7 @@ if [ ! -f "${HOME}/.ssh" ]; then
 fi
 
 DOTFILES_DIR="$HOME/.important/dotfiles"
-echo "Establishing Sym Links..."
+echo "🔗 Establishing Sym Links..."
 # Establish Sym Links
 symlink "${DOTFILES_DIR}/.zshrc" "${HOME}/.zshrc"
 
@@ -57,5 +57,5 @@ for val in "$DOTFILES_DIR"/.config/*; do
 done
 
 
-print_green "Finished setting up dotfiles.. Executing important_installs.sh"
+print_green "🏁 Finished setting up dotfiles. Executing important_installs.sh"
 bash "${DOTFILES_DIR}/scripts/important_installs.sh"

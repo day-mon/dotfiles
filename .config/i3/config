@@ -16,6 +16,7 @@ workspace_layout default
 #border indicator on windows:
 new_window pixel 10
 new_float pixel 12
+hide_edge_borders both
 
 # window boarders
 gaps inner 40
@@ -23,7 +24,7 @@ gaps outer 15
 gaps top -10
 gaps bottom 0
 focus_follows_mouse yes
-
+#default_border pixel 3
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -98,7 +99,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+s exec ~/.important/dotfiles/scripts/upload_picture.sh
 
 # restart i3 inplace (preserves your layout/session, can be used to update i3)
-bindsym $mod+Shift+r restart && killall -q polybar && ~/.config/polybar/launch &
+bindsym $mod+Shift+r restart && killall -q polybar && ~/.config/polybar/launch & 
 
 bindsym $mod+Ctrl+greater move workspace to output right
 bindsym $mod+Ctrl+less move workspace to output left
@@ -205,15 +206,12 @@ assign [class="(?i)youtube"] $ws9
 assign [class="jetbrains-"] $ws6 
 assign [class="(?i)mailspring"] $ws8
 
-
 # automatic set focus new window if it opens on another workspace then the current:
-for_window [class="^.*"] border 1pixel
-for_window [class=kitty] focus 1pixel
-for_window [class=(?i)firefox] focus 1pixel
+for_window [class="^.*"] border pixel 1
 
 exec echo $(date) >> ~/.log/startup.log
 
-exec_always --no-startup-id compton
+exec_always --no-startup-id picom -b --experimental-backends
 
 #get auth work with polkit-gnome
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
@@ -230,14 +228,11 @@ exec steam
 #librewolf
 exec flatpak run io.gitlab.librewolf-community
 
-# protonvpn 
-#exec protonvpn-cli c -p udp -f >> ~/.log/startup.log
-
 # yt music
 exec /opt/YoutubeMusic/YoutubeMusic
 
 # Set BG
-exec --no-startup-id feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg >> ~/.log/startup.log
+exec --no-startup-id ~/.important/dotfiles/scripts/random_bg >> ~/.log/startup.log
 
 # Desktop notifications
 exec --no-startup-id dbus-launch dunst --config ~/.config/dunst/dunstrc >> ~/.log/startup.log
@@ -258,10 +253,7 @@ exec discord &
 exec mailspring 
 
 # polybar
-exec_always --no-startup-id ~/.config/polybar/launch &
-
-# start monitors setup script
-exec --no-startup-id ~/.important/dotfiles/scripts/set_monitors.sh >> ~/.log/startup.log
+exec_always --no-startup-id killall polybar && ~/.config/polybar/launch &
 
 # set floating (nontiling) for special apps
 for_window [class="Xsane" instance="xsane"] floating enable
@@ -275,7 +267,6 @@ for_window [class="Steam" title="^Steam$"] floating disable
 
 # set border of floating window
 for_window [class="urxvt"] border pixel 1
-
 
 ######################################
 # color settings for bar and windows #
@@ -300,9 +291,6 @@ client.focused          $grey $grey $grey $grey $grey
 client.unfocused        $black $black $black $black $black
 client.focused_inactive $grey $grey $grey $grey $grey
 client.urgent           $white $white $white $white $white
-
-
-
 
 bindsym $mod+d exec --no-startup-id ~/.config/rofi/launcher/launcher &
 
