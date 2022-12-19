@@ -24,15 +24,20 @@ fi
 # just sourcing
 . "$HOME"/.config/zsh/secrets
 
+if [ -z $SCREENSHOT_UPLOAD_AUTH ]; then
+    notify-send "❌ Please set the SCREENSHOT_UPLOAD_AUTH variable in $HOME/.config/zsh/secrets"
+    exit
+fi
+
 UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: ""${SCREENSHOT_UPLOAD_AUTH}""" -F file=@"${HOME}"/Pictures/"${DATE}" ${URL}/api/upload)
 
 
 if [ $? -eq 0  ]; then
     UPLOAD=$(echo $UPLOAD | jq '.[]' | jq '.[0]' | sed "s/\"//g")
     echo "[INFO]: File successfully uploaded on ${DATE} to ${UPLOAD} " >> "${LOG_FILE_NAME}"
-    notify-send "Screenshot successfully uploaded to ${UPLOAD}"
+    notify-send "✅ Screenshot successfully uploaded to ${UPLOAD}"
     echo "${UPLOAD}" | xsel -ib
 else
     echo "[ERROR]: File upload to ${URL} has failed " >> "${LOG_FILE_NAME}"
-    notify-send "Screenshot has been failed to upload"
+    notify-send "❌ Screenshot has been failed to upload"
 fi
