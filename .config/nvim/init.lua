@@ -1,1 +1,3 @@
-require('damon')
+require("damon")
+print("hello")
+

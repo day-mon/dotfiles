@@ -1,10 +1,11 @@
 [user]
-	email = damon@montague.im
-	name = Damon L Montague Jr.
-	signingkey = < KEY HERE >
+	email = EMAIL
+	name = NAME 
+	signingKey = GPGKEY 
 [commit]
 	gpgSign = true
 [push]
 	autoSetupRemote = true
 [core]
 	autocrlf = input
+	editor = nvim
