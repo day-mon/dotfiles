@@ -21,6 +21,3 @@ o.termguicolors = true
 o.tabstop = 4
 o.winbar = "%=%m %f"
 o.wrap = false
-
-g.loaded_netrw = 1
-g.loaded_netrwPlugin = 1

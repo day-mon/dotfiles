@@ -1,3 +1,3 @@
-require("damon.plugins")
+require("damon.colorscheme")
+require("damon.remap")
 require("damon.options")
-require("damon.keymaps")
