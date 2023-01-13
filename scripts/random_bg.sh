@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! hash feh; then
+    echo "Feh not installed"
+    exit
+fi
+
 # Set the directory containing the background images
 bg_dir="$HOME/.important/dotfiles/wallpapers"
 

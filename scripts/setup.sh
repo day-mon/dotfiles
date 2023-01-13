@@ -24,9 +24,9 @@ symlink() {
   fi
 
   if ln -s "$1" "$2" >> /dev/null 2>&1; then
-    printf "🔗 Symlinked ${GREEN_UNDERLINE}$1${NC} to ${GREEN_UNDERLINE}$2${NC}\n"
+    print_green "🔗 Symlinked ${GREEN_UNDERLINE}$1${NC} to ${GREEN_UNDERLINE}$2${NC}\n"
   else
-    printf "🚫 Symlink failed ${RED_UNDERLINE}$1${NC} to ${RED_UNDERLINE}$2${NC}\n"
+    print_red"🚫 Symlink failed ${RED_UNDERLINE}$1${NC} to ${RED_UNDERLINE}$2${NC}\n"
   fi
 }
 
@@ -36,14 +36,14 @@ REMOTE_URL=$(git remote get-url origin)
 if  [ "${REMOTE_URL:0:4}" != "git@" ]; then
     REMOTE_URL=$(echo "$REMOTE_URL" | sed -e "s/https:\/\//git@/g" -e "s/\.com:/\.com:/g")
     git remote set-url origin "$REMOTE_URL"
-    printf "🔐 SSH URL Check (Switching to SSH)... ${GREEN}✅${NC}\n"
+    print_green "🔐 SSH URL Check (Switching to SSH)... ${GREEN}✅${NC}\n"
 else
-  printf "🔐 SSH URL Check (Already set)... ${GREEN}✅${NC}\n"
+  print_yellow "🔐 SSH URL Check (Already set)... ${GREEN}✅${NC}\n"
 fi
 
 
 if [ ! -f "${HOME}/.ssh" ]; then
-    mkdir -p "${HOME}/.ssh"
+    mkdir -p "$HOME/.ssh"
 fi
 
 DOTFILES_DIR="$HOME/.important/dotfiles"

@@ -19,7 +19,7 @@ print_red() {
 }
 
 # Set list of packages to install
-set -- paru topgrade bat exa go xsel feh flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic
+set -- paru topgrade bat exa go xsel feh picom flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic
 
 # Check if system is Arch Linux
 if [ ! -f /etc/arch-release ]; then
@@ -30,7 +30,7 @@ printf "🔍 Arch Linux Check... ${GREEN}✅${NC}\n"
 
 # Check for updates and perform update if necessary
 UPDATES=$(checkupdates | wc -l)
-if "$UPDATES" -ne 0; then
+if [ "$UPDATES" -ne 0 ]; then
     printf "🔄 Attempting to update ${GREEN_UNDERLINE}${UPDATES}${NC} packages\n"
     if sudo pacman -Syyu --noconfirm --quiet; then
       printf "🔄 Update check (${GREEN_UNDERLINE}${UPDATES}${NC} packages)... ${GREEN}✅${NC}\n"
@@ -60,14 +60,14 @@ done
 # Set background image
 if pacman -Qs "feh" > /dev/null 2>&1; then
    if feh --bg-fill ~/.important/dotfiles/wallpapers/wallpaper.jpg; then
-       printf "🖼 Setting background.... ${GREEN_UNDERLINE}✅${NC}\n"
+       print_green "🖼 Background as been set via feh.... ${GREEN_UNDERLINE}✅${NC}"
     else 
-        printf "🖼 Setting background.... ${RED}❌${NC} (feh command failed)\n"
+        print_red "🖼 Setting background.... ${RED}❌${NC} (feh command failed)"
     fi
 else 
-    print_red "🖼 Setting background.... ${RED}❌${NC} (feh command not found)\n"
+    print_red "🖼 Setting background.... ${RED}❌${NC} (feh command not found)"
 fi
 
-echo "🏁 Finished installing important things. Installing fonts 📜"
+print_green "🏁 Finished installing important things. Installing fonts 📜"
 bash "$HOME/.important/dotfiles/scripts/install_fonts.sh"
 

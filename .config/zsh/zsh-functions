@@ -75,7 +75,7 @@ function kill_pid() {
     # Check if the PID is valid
     if [ -z "$PID" ]; then 
         echo "No process found with name $PNAME"
-        return 1
+        return
     fi
 
     # Attempt to kill the process with the SIGTERM signal
@@ -86,11 +86,11 @@ function kill_pid() {
         
         if ! pgrep $PID; then
             printf "PID: %d, has been killed :)\n" "$PID"
-            return 1
+            return
         fi
     else
         printf "PID %d, could not be sent the SIGTERM signal :(. Error $?\n" "$PID"
-        return 1
+        return
     fi
 
     # Wait 5 seconds
@@ -105,7 +105,7 @@ function kill_pid() {
             printf "PID: %d, has been killed with the SIGKILL signal :)\n" "$PID"
         else
             printf "PID %d, could not be killed with the SIGKILL signal :(. Error $?\n" "$PID"
-            return 1
+            return
         fi
     fi
 }

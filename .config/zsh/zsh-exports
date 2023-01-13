@@ -5,3 +5,6 @@ export GOPATH="$HOME/.projects/go"
 export PNPM_HOME="/home/damon/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 export PATH="/home/damon/.cargo/bin:$PATH"
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
