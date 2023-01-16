@@ -91,6 +91,8 @@ bindsym $mod+Shift+e exec ~/.config/rofi/powermenu/powermenu
 # lock by blurring the screen:
 bindsym $mod+l exec ~/.config/i3/scripts/blur-lock
 
+bindsym $mod+k exec /usr/bin/xkill
+
 # reload the configuration file
 bindsym $mod+Shift+c reload
 
@@ -102,12 +104,6 @@ bindsym $mod+Shift+r restart && killall -q polybar && ~/.config/polybar/launch &
 
 bindsym $mod+Ctrl+greater move workspace to output right
 bindsym $mod+Ctrl+less move workspace to output left
-
-# change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+b focus up
-bindsym $mod+o focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
