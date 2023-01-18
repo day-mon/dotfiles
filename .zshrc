@@ -22,6 +22,6 @@ zsh_add_plugin "hlissner/zsh-autopair"
 zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 # For more plugins: https://github.com/unixorn/awesome-zsh-plugins
 
-add_all_ssh
-
 eval "$(starship init zsh)"
+
+add_all_ssh
