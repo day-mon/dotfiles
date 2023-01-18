@@ -45,9 +45,11 @@ fi
 for i in "$@"; do
     if ! pacman -Qs "$i" > /dev/null 2>&1; then
         printf "📦 Installing ${GREEN_UNDERLINE}%s${NC}\n" "$i"
-        if ! sudo pacman -S "$i" --noconfirm --quiet; then
-           if ! paru -S "$i" --noconfirm --quiet; then
+        if ! sudo pacman -S "$i" --noconfirm > /dev/null 2>&1; then
+           if ! paru -S "$i" --noconfirm > /dev/null 2>&1; then
                print_red "🚫 Failed to install $i"
+           else
+               print_green "📦 Instlled ${GREEN_UNDERLINE}$i${NC}"
            fi
         else
             print_green "📦 Installed ${GREEN_UNDERLINE}$i${NC}"
