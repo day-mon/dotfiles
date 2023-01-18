@@ -57,7 +57,11 @@ alias fgrep='fgrep --color=auto'
 # confirm before overwriting something
 alias cp="cp -i"
 alias mv='mv -i'
-alias rm='mv -t /tmp '
+if [ $(uname) = "Darwin" ]; then
+    alias rm='mv /tmp '
+else
+    alias rm='mv -t /tmp '
+fi
 
 # easier to read disk
 alias df='df -h'     # human-readable sizes
