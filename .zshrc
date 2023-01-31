@@ -12,8 +12,10 @@ autoload -Uz compinit && compinit
 
 # Sourced files
 zsh_add_file "zsh-exports"
+zsh_add_file "zsh-executions"
 zsh_add_file "zsh-aliases"
 zsh_add_file "secrets"
+
 
 # Plugins
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
