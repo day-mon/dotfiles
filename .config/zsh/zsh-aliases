@@ -89,6 +89,10 @@ else
     alias ll='ls -lav --ignore=..'   # show long listing of all except ".."
     alias l='ll'   # show long listing but no hidden dotfiles except "."
 fi
+
+alias gs='git status'
+alias gp='git push'
+alias gc='git commit'
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word

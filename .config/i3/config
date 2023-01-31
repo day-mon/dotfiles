@@ -1,4 +1,4 @@
-font pango: Jetbrains Mono Medium 12
+font pango: JetBrains Mono SemiBold Nerd Font Complete 12
 
 # Mod key is ALT
 set $mod Mod1
@@ -78,9 +78,6 @@ bindsym $mod+r mode "resize"
 
 # start a terminal
 bindsym $mod+Return exec kitty  
-
-# update packages and keep terminal open for 10 seconds
-bindsym $mod+u exec kitty -e --hold sh -c "yay && flatpak update && echo You have && $HOME/.config/polybar/scripts/updates && echo updates left"
 
 #kill focused window
 bindsym $mod+q kill
@@ -168,7 +165,7 @@ bindsym XF86AudioPrev exec playerctl previous
 bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts 
-bindsym $mod+w exec flatpak run org.mozilla.firefox 
+bindsym $mod+w exec firefox & 
 bindsym $mod+n exec /usr/bin/nemo > /dev/null 2>&1 || /usr/bin/thunar
 
 # Power Profiles menu switcher (rofi)UPLOAD
@@ -219,9 +216,6 @@ exec kitty
 
 # steam
 exec steam
-
-#librewolf
-exec flatpak run org.mozilla.firefox.BaseApp
 
 # yt music
 exec /opt/YoutubeMusic/YoutubeMusic

@@ -19,7 +19,7 @@ print_red() {
 }
 
 # Set list of packages to install
-set -- paru topgrade bat exa go xsel feh picom flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic
+set -- topgrade bat exa go xsel feh picom flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic noto-fonts-emoji
 
 # Check if system is Arch Linux
 if [ ! -f /etc/arch-release ]; then
@@ -27,6 +27,22 @@ if [ ! -f /etc/arch-release ]; then
     exit 1
 fi
 printf "🔍 Arch Linux Check... ${GREEN}✅${NC}\n"
+
+
+
+
+if ! hash git > /dev/null; then 
+    pacman -S git --noconfirm
+fi
+
+
+if ! hash paru > /dev/null; then
+    sudo pacman -S --needed base-devel
+    git clone https://aur.archlinux.org/paru.git
+    cd paru
+    makepkg -si
+fi
+
 
 # Check for updates and perform update if necessary
 UPDATES=$(checkupdates | wc -l)
