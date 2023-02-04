@@ -5,6 +5,7 @@ if hash nvim >> /dev/null 2>&1; then
     alias nvimrc='nvim ~/.config/nvim/'
 fi
 
+ 
 if hash pacman >> /dev/null 2>&1; then
 	alias update-mirrors="sudo reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && yay -Syyu"
 	alias remove-orphans="pacman -Rns $(pacman -Qdtq)"
@@ -49,11 +50,15 @@ fi
 alias zsh-update-plugins="find "$ZDOTDIR/plugins" -type d -exec test -e '{}/.git' ';' -print0 | xargs -I {} -0 git -C {} pull -q"
 
 
-# Colorize grep output (good for log files)
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
 
+if hash rg >> /dev/null 2>&1; then
+    alias grep=rg
+else
+    # Colorize grep output (good for log files)
+    alias grep='grep --color=auto'
+    alias egrep='egrep --color=auto'
+    alias fgrep='fgrep --color=auto'
+fi
 # confirm before overwriting something
 alias cp="cp -i"
 alias mv='mv -i'
@@ -93,6 +98,7 @@ fi
 alias gs='git status'
 alias gp='git push'
 alias gc='git commit'
+alias gd='git diff'
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
