@@ -84,9 +84,11 @@ function kill_pid() {
     if [ $? -eq 0 ]; then
         printf "PID: %d, has been sent the SIGTERM signal :)\n" "$PID"
         
-        if ! pgrep $PID; then
+        if ! ps -p $PID > /dev/null 2>&1; then
             printf "PID: %d, has been killed :)\n" "$PID"
             return
+        else
+           printf "PID: %d could not be killed. Waiting 5 seconds to force kill\n" "$PID" 
         fi
     else
         printf "PID %d, could not be sent the SIGTERM signal :(. Error $?\n" "$PID"
@@ -107,7 +109,10 @@ function kill_pid() {
             printf "PID %d, could not be killed with the SIGKILL signal :(. Error $?\n" "$PID"
             return
         fi
+    else
+      printf "PID: %d was killed gracefully after 5 seconds" "$PID"
     fi
+
 }
 
 

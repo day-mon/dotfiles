@@ -61,13 +61,9 @@ else
 fi
 # confirm before overwriting something
 alias cp="cp -i"
-alias mv='mv -i'
-if [ $(uname) = "Darwin" ]; then
-    alias rm='mv /tmp '
-else
-    alias rm='mv -t /tmp '
-fi
-
+#if hash rip >> /dev/null 2>&1; then
+#  alias rm=rip
+#fi
 # easier to read disk
 alias df='df -h'     # human-readable sizes
 alias free='free -m' # show sizes in MB
