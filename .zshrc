@@ -27,3 +27,4 @@ zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 eval "$(starship init zsh)"
 
 add_all_ssh
+

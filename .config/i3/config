@@ -218,7 +218,7 @@ exec kitty
 exec steam
 
 # yt music
-exec /opt/YoutubeMusic/YoutubeMusic
+exec youtubemusic
 
 # Set BG
 exec_always --no-startup-id ~/.important/dotfiles/scripts/random_bg.sh >> ~/.log/startup.log
@@ -232,11 +232,11 @@ exec --no-startup-id nvidia-settings --load-config-only
 #openrgb
 exec openrgb -p purp
 
+exec gkraken --hide-window
+
 # Discord
 exec discord &
 
-# mailspring client
-exec thunderbird 
 
 # polybar
 exec_always --no-startup-id ~/.config/polybar/launch &
