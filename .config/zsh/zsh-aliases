@@ -5,9 +5,13 @@ if hash nvim >> /dev/null 2>&1; then
     alias nvimrc='nvim ~/.config/nvim/'
 fi
 
+
+if hash tidy-viewer >> /dev/null 2>&1; then
+  alias tv=tidy-viewer
+fi
  
 if hash pacman >> /dev/null 2>&1; then
-	alias update-mirrors="sudo reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && yay -Syyu"
+	alias update-mirrors="sudo reflector --protocol https --verbose --latest 25 --sort rate --save /etc/pacman.d/mirrorlist && paru -Syyu"
 	alias remove-orphans="pacman -Rns $(pacman -Qdtq)"
 	alias pac="sudo pacman"
 

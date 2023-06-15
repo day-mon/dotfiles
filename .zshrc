@@ -28,3 +28,6 @@ eval "$(starship init zsh)"
 
 add_all_ssh
 
+
+# bun completions
+[ -s "/home/damon/.bun/_bun" ] && source "/home/damon/.bun/_bun"

@@ -19,7 +19,7 @@ print_red() {
 }
 
 # Set list of packages to install
-set -- topgrade bat exa go xsel feh picom flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord cronie betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic noto-fonts-emoji
+set -- topgrade bat exa go xsel feh picom flameshot docker xorg-xfd docker-compose zsh nemo neofetch kitty neovim discord cronie betterdiscordctl jetbrains-toolbox nvim-packer-git enquirer youtubemusic noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
 
 # Check if system is Arch Linux
 if [ ! -f /etc/arch-release ]; then
