@@ -229,6 +229,8 @@ exec --no-startup-id dbus-launch dunst --config ~/.config/dunst/dunstrc >> ~/.lo
 # Nvidida settings
 exec --no-startup-id nvidia-settings --load-config-only
 
+exec thunderbird
+
 #openrgb
 exec openrgb -p purp
 
