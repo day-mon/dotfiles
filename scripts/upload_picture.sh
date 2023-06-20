@@ -33,8 +33,9 @@ UPLOAD=$(curl -H "Content-Type: multipart/form-data" -H "authorization: ""${SCRE
 
 
 if [ $? -eq 0  ]; then
-    UPLOAD=$(echo $UPLOAD | jq '.[]' | jq '.[0]' | sed "s/\"//g") 
+#    notify-send "✅ Screenshot successfully uploaded to ${UPLOAD}"
     echo "[INFO]: File successfully uploaded on ${DATE} to ${UPLOAD} " >> "${LOG_FILE_NAME}"
+    UPLOAD=$(echo $UPLOAD | jq '.files[0]' | sed "s/\"//g")
     notify-send "✅ Screenshot successfully uploaded to ${UPLOAD}"
     echo "${UPLOAD}" | xsel -ib
 else
