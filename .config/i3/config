@@ -165,7 +165,7 @@ bindsym XF86AudioPrev exec playerctl previous
 bindsym $mod+p exec /usr/local/bin/switch-audio-port
 
 ## App shortcuts 
-bindsym $mod+w exec flatpak run io.gitlab.librewolf-community
+bindsym $mod+w exec firefox
 bindsym $mod+n exec ~/.important/dotfiles/scripts/open_fe.sh
 
 # Power Profiles menu switcher (rofi)UPLOAD
