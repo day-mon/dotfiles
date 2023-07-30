@@ -194,6 +194,10 @@ def install_fonts(fonts: List[str]):
 
 
 def uninstall():
+    if platform.lower() != 'linux':
+        print("ℹ️ Bailing not linux")
+        return
+
     packages = ['i3status', 'i3blocks']
 
     for package in packages:
