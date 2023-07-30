@@ -1,10 +1,13 @@
 import os
 import subprocess
+from typing import List
+from typing import List
 from urllib.parse import urlparse
 import shutil
 import argparse
 from sys import platform
 import requests
+import json
 import zipfile
 from pathlib import Path
 
@@ -65,18 +68,12 @@ def setup():
         symlink(os.path.join(config_dir, file), os.path.join(os.path.expanduser("~/.config"), file))
 
 
-def important_installs():
+def important_installs(packages: List[str]):
     if not shutil.which("pacman"):
         print_red("🚫 Arch Linux Check... ❌")
         exit(1)
 
     print_green("🔍 Arch Linux Check... ✅")
-
-    packages = ["topgrade", "bat", "exa", "go", "xsel", "feh", "picom", "flameshot", "docker", "xorg-xfd",
-                "docker-compose", "zsh", "nemo", "neofetch", "kitty", "neovim", "discord", "cronie", "betterdiscordctl",
-                "jetbrains-toolbox", "nvim-packer-git", "enquirer", "youtubemusic", "noto-fonts-cjk",
-                "noto-fonts-emoji",
-                "noto-fonts-extra", "xdotool", "wget"]
 
     if not shutil.which("git"):
         print("📦 Git not found.. Installing so we can continue")
@@ -133,7 +130,7 @@ def important_installs():
         print_red("🖼 Setting background....❌ (feh command failed)")
 
 
-def install_fonts():
+def install_fonts(fonts: List[str]):
     if platform.lower() == "darwin":
         tap = subprocess.run(['brew', 'tap', 'homebrew/cask-fonts'])
         if tap.returncode != 0:
@@ -147,12 +144,6 @@ def install_fonts():
 
         print_green("✅ Fonts installed successfully!")
         return
-
-    fonts = [
-        "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/JetBrainsMono.zip",
-        "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/3270.zip",
-        "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/FiraCode.zip"
-    ]
 
     # Create .local/share/fonts directory if it doesn't exist
     font_dir = Path.home() / ".local" / "share" / "fonts"
@@ -229,9 +220,19 @@ def main():
     parser.add_argument("--all", action='store_true', help="Install all")
     args = parser.parse_args()
 
+    if not os.path.exists("setup.json"):
+        print_red("🚫 setup.json has not been found")
+        exit(1)
+
     if not (args.setup or args.installs or args.uninstalls or args.all):
         print_red("🚫 No arguments passed... ❌")
         exit(1)
+
+    setup_file = open('setup.json', mode='r')
+    setup_json = json.load(setup_file)
+
+    packages = setup_json.get('packages', [])
+    fonts = setup_json.get('fonts', [])
 
     if args.setup or args.all:
         setup()
@@ -240,10 +241,10 @@ def main():
         uninstall()
 
     if args.installs or args.all:
-        important_installs()
+        important_installs(packages)
 
     if args.fonts or args.all:
-        install_fonts()
+        install_fonts(fonts)
 
     print_green("🎉 Setup Complete 🎉")
 
