@@ -1,2 +1,3 @@
 [[ -s "/home/damon/.sdkman/bin/sdkman-init.sh" ]] && source "/home/damon/.sdkman/bin/sdkman-init.sh"
 [ -s "/home/damon/.bun/_bun" ] && source "/home/damon/.bun/_bun"
+source $HOME/.config/zsh/secrets

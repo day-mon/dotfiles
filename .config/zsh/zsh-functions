@@ -6,6 +6,10 @@ function take () {
     cd $1
 }
 
+function upload() {
+  python $HOME/.important/dotfiles/scripts/upload_file.py --token $UPLOAD_TOKEN --files $1
+}
+
 function sizeofdr() {
     sudo du -sh $1
 }
@@ -17,6 +21,9 @@ function gpg-export () {
 function kill-port() {
     local PID
     PID=$(lsof -i tcp:$1 | awk 'FNR==2{print $2;exit}')
+
+    echo "Port for $PID"
+
     kill_pid ""$PID"" 
 }
 

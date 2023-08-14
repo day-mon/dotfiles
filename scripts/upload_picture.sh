@@ -21,6 +21,11 @@ if [ ! -e LOG_FILE_NAME ]; then
     touch "${LOG_FILE_NAME}"
 fi
 
+
+if [ ! -d "$HOME"/.config/zsh/secrets ]; then
+    mkdir "$HOME"/.config/zsh/secrets
+fi
+
 # just sourcing
 . "$HOME"/.config/zsh/secrets
 
