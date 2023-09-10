@@ -1,21 +1,18 @@
-export ZDOTDIR=$HOME/.config/zsh
-SAVEHIST=1000  # Save most-recent 1000 lines
-HISTFILE=${HOME}/.zshrc_history
+#!/bin/zsh
+if [[ $1 == "--debug" ]]; then
+    zmodload zsh/zprof
+fi
+
+
 setopt inc_append_history share_history
 
 # Source useful functions (from chris@machine)
-source "$ZDOTDIR/zsh-functions"
+source "$ZDOTDIR/functions.zsh"
 
-# Colors
-autoload -Uz colors && colors
-autoload -Uz compinit && compinit
 
 # Sourced files
-zsh_add_file "zsh-exports"
-zsh_add_file "zsh-executions"
-zsh_add_file "zsh-aliases"
-zsh_add_file "secrets"
-
+# zsh_add_file "zsh-executions"
+zsh_add_file "aliases.zsh"
 
 # Plugins
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
@@ -26,8 +23,15 @@ zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 
 eval "$(starship init zsh)"
 
-add_all_ssh
+add_all_ssh $1
+
+# Colors
+autoload -Uz colors && colors
+# autoload -Uz compinit && compinit
+[ ! "$(find ~/.config/zsh/.zcompdump -mtime 1)" ] || compinit
+compinit -C
 
 
-# bun completions
-[ -s "/home/damon/.bun/_bun" ] && source "/home/damon/.bun/_bun"
+if [[ $1 == "--debug" ]]; then
+    zprof
+fi

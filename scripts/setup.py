@@ -59,9 +59,16 @@ def setup():
         os.makedirs(ssh_dir)
 
     dotfiles_dir = os.path.join(os.path.expanduser("~/.important/dotfiles"))
+    zsh_directory = f"{dotfiles_dir}/.config/zsh"
+
+    if not os.path.exists(f"{zsh_directory}/.zshenv"):
+        with open(f"{zsh_directory}/.zshenv", "w") as file:
+            file.write("export ZDOTDIR=$HOME/.config/zsh\n")
+        print("📝 Created .zshenv file, place your env variables here")
+
     print("🔗 Establishing Sym Links...")
-    # Establish Sym Links
-    symlink(os.path.join(dotfiles_dir, ".zshrc"), os.path.join(os.path.expanduser("~/.zshrc")))
+    symlink(os.path.join(zsh_directory, ".zshrc"), os.path.join(os.path.expanduser("~/.zshrc")))
+    symlink(os.path.join(zsh_directory, ".zshenv"), os.path.join(os.path.expanduser("~/.zshenv")))
 
     config_dir = os.path.join(dotfiles_dir, ".config")
     for file in os.listdir(config_dir):
@@ -69,49 +76,64 @@ def setup():
 
 
 def important_installs(packages: List[str]):
-    if not shutil.which("pacman"):
-        print_red("🚫 Arch Linux Check... ❌")
+    if not shutil.which("pacman") and not shutil.which("brew"):
+        print_red("🚫 Pacman or Brew not found... ❌")
         exit(1)
 
-    print_green("🔍 Arch Linux Check... ✅")
+    print_green(f"🔍 You are running {platform.lower()}  ✅")
 
     if not shutil.which("git"):
         print("📦 Git not found.. Installing so we can continue")
-        subprocess.run(["sudo", "pacman", "--noconfirm", "-S", "git"])
+        if platform.lower() == "darwin":
+            subprocess.run(["brew", "install", "git"])
+        else:
+            subprocess.run(["sudo", "pacman", "--noconfirm", "-S", "git"])
 
-    if not shutil.which("paru"):
+    if not shutil.which("paru") and platform.lower() == "linux":
         subprocess.run(["sudo", "pacman", "-S", "--needed", "base-devel"])
         subprocess.run(["git", "clone", "https://aur.archlinux.org/paru.git"])
         subprocess.run(["makepkg", "-si"], cwd="paru")
         shutil.rmtree("paru")
 
-    subprocess.run(["sudo", "pacman", "-Syyu", "--noconfirm", "--quiet"])
+    if platform.lower() == "linux":
+        subprocess.run(["sudo", "pacman", "-Syyu", "--noconfirm", "--quiet"])
+    else:
+        subprocess.run(["brew", "update"])
 
     already_installed = 0
     installed = 0
     failed_installs = 0
 
     for package in packages:
-        sp = subprocess.run(["sudo", "pacman", "-Q", package], stdout=subprocess.DEVNULL,
+        args_to_run = ["sudo", "pacman", "-S", "--noconfirm", "--quiet", package] if platform.lower() == "linux" else [
+            "brew", "install", package
+        ]
+
+        sp = subprocess.run(args_to_run, stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL)
         if sp.returncode == 0:
             already_installed += 1
             print_yellow(f"🔍 {package} is already installed")
             continue
 
-        sp = subprocess.run(["pacman", "-S", "--noconfirm", "--quiet", package], stdout=subprocess.DEVNULL,
+        args_to_run = ["paru", "-S", "--noconfirm", "--quiet", package] if platform.lower() == "linux" else [
+            "brew", "install", package
+        ]
+
+        sp = subprocess.run(args_to_run, stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL)
         if sp.returncode == 0:
             installed += 1
             print_green(f"✅ Installed {package}")
             continue
 
-        sp = subprocess.run(["paru", "-S", "--noconfirm", "--quiet", package], stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-        if sp.returncode == 0:
-            installed += 1
-            print_green(f"✅ Installed {package}")
-            continue
+        if platform.lower() == "linux":
+            sp = subprocess.run(["paru", "-S", "--noconfirm", "--quiet", package], stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
+            if sp.returncode == 0:
+                installed += 1
+                print_green(f"✅ Installed {package}")
+                continue
 
         failed_installs += 1
         print_red(f"🚫 Failed to install {package}")
@@ -221,6 +243,7 @@ def main():
     parser.add_argument('--uninstalls', action='store_true', help='Uninstalls common packages that are annoying')
     parser.add_argument('--installs', action='store_true', help='Install important packages')
     parser.add_argument("--fonts", action='store_true', help='Install fonts')
+    parser.add_argument("--files", action='store_true', help='Setup env files and the like')
     parser.add_argument("--all", action='store_true', help="Install all")
     args = parser.parse_args()
 
@@ -249,6 +272,9 @@ def main():
 
     if args.fonts or args.all:
         install_fonts(fonts)
+
+    if args.files or args.all:
+        set
 
     print_green("🎉 Setup Complete 🎉")
 
