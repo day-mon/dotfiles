@@ -1,3 +1,0 @@
-require("damon")
-print("hello")
-

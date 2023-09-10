@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 # Function
 function take () {
@@ -138,7 +138,6 @@ function add_all_ssh() {
     fi
 
   for key in "${HOME}/.ssh"/*; do
-
     if [ ! -f "$key" ]; then 
         continue
     fi
@@ -146,10 +145,13 @@ function add_all_ssh() {
     ssh_key=$(cat "$key" | head -c 35)
     if [ "$ssh_key" = "-----BEGIN OPENSSH PRIVATE KEY-----" ]; then
         ssh-add "$key" >> /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo "Succesfully added $key"
+        ssh_exit_status=$?
+        if [ "$1" = "--debug" ]; then
+          :
+        elif [ ${ssh_exit_status} -eq 0 ]; then
+            echo "Successfully added $key"
         else
-            echo "Could not add $key. Error code $?"
+            echo "Could not add $key. Error code ${ssh_exit_status}"
         fi
     fi
   done
