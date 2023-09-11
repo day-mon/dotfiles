@@ -142,7 +142,7 @@ function add_all_ssh() {
         continue
     fi
 
-    ssh_key=$(cat "$key" | head -c 35)
+    ssh_key=$(head -1 $key)
     if [ "$ssh_key" = "-----BEGIN OPENSSH PRIVATE KEY-----" ]; then
         ssh-add "$key" >> /dev/null 2>&1
         ssh_exit_status=$?
