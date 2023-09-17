@@ -5,7 +5,7 @@
         "https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/FiraCode.zip"
     ],
     "packages": [
-        "topgrade", "bat", "exa", "go", "xsel", "feh", "picom", "flameshot", "docker", "xorg-xfd",
+        "topgrade", "bat", "eza", "go", "xsel", "feh", "picom", "flameshot", "docker", "xorg-xfd",
         "docker-compose", "zsh", "nemo", "neofetch", "kitty", "neovim", "discord", "cronie", "betterdiscordctl",
         "jetbrains-toolbox", "nvim-packer-git", "enquirer", "youtubemusic", "noto-fonts-cjk",
         "noto-fonts-emoji","noto-fonts-extra", "xdotool", "wget", "xorg-xrandr"

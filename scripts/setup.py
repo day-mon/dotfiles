@@ -62,7 +62,7 @@ def setup():
     zsh_directory = f"{dotfiles_dir}/.config/zsh"
 
     if not os.path.exists(f"{zsh_directory}/.zshenv"):
-        with open(f"{zsh_directory}/.zshenv", "w") as file:
+        with open(f"{zsh_directory}/.zshenv", "x") as file:
             file.write("export ZDOTDIR=$HOME/.config/zsh\n")
         print("📝 Created .zshenv file, place your env variables here")
 
