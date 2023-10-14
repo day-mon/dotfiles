@@ -1,7 +1,6 @@
 import os
 import subprocess
 from typing import List
-from typing import List
 from urllib.parse import urlparse
 import shutil
 import argparse
@@ -84,18 +83,18 @@ def important_installs(packages: List[str]):
 
     if not shutil.which("git"):
         print("📦 Git not found.. Installing so we can continue")
-        if platform.lower() == "darwin":
+        if not shutil.which('pacman'):
             subprocess.run(["brew", "install", "git"])
         else:
             subprocess.run(["sudo", "pacman", "--noconfirm", "-S", "git"])
 
-    if not shutil.which("paru") and platform.lower() == "linux":
+    if not shutil.which("paru") and shutil.which('pacman'):
         subprocess.run(["sudo", "pacman", "-S", "--needed", "base-devel"])
         subprocess.run(["git", "clone", "https://aur.archlinux.org/paru.git"])
         subprocess.run(["makepkg", "-si"], cwd="paru")
         shutil.rmtree("paru")
 
-    if platform.lower() == "linux":
+    if shutil.which('pacman'):
         subprocess.run(["sudo", "pacman", "-Syyu", "--noconfirm", "--quiet"])
     else:
         subprocess.run(["brew", "update"])
@@ -105,7 +104,7 @@ def important_installs(packages: List[str]):
     failed_installs = 0
 
     for package in packages:
-        args_to_run = ["sudo", "pacman", "-S", "--noconfirm", "--quiet", package] if platform.lower() == "linux" else [
+        args_to_run = ["sudo", "pacman", "-S", "--noconfirm", "--quiet", package] if shutil.which('pacman') else [
             "brew", "install", package
         ]
 
@@ -116,7 +115,7 @@ def important_installs(packages: List[str]):
             print_yellow(f"🔍 {package} is already installed")
             continue
 
-        args_to_run = ["paru", "-S", "--noconfirm", "--quiet", package] if platform.lower() == "linux" else [
+        args_to_run = ["paru", "-S", "--noconfirm", "--quiet", package] if shutil.which('pacman') else [
             "brew", "install", package
         ]
 
@@ -127,7 +126,7 @@ def important_installs(packages: List[str]):
             print_green(f"✅ Installed {package}")
             continue
 
-        if platform.lower() == "linux":
+        if shutil.which('pacman'):
             sp = subprocess.run(["paru", "-S", "--noconfirm", "--quiet", package], stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL)
             if sp.returncode == 0:
@@ -145,15 +144,16 @@ def important_installs(packages: List[str]):
     🚫 Failed Installs: {failed_installs}
     """)
 
-    wallpaper_location = os.path.expanduser("~/.important/dotfiles/wallpapers/wallpaper.jpg")
+    if shutil.which("feh"):
+        wallpaper_location = os.path.expanduser("~/.important/dotfiles/wallpapers/wallpaper.jpg")
 
-    bg = subprocess.run(["feh", "--bg-fill", f"{wallpaper_location}"])
-    if bg.returncode != 0:
-        print_red("🖼 Setting background....❌ (feh command failed)")
+        bg = subprocess.run(["feh", "--bg-fill", f"{wallpaper_location}"])
+        if bg.returncode != 0:
+            print_red("🖼 Setting background....❌ (feh command failed)")
 
 
 def install_fonts(fonts: List[str]):
-    if platform.lower() == "darwin":
+    if shutil.which('brew'):
         tap = subprocess.run(['brew', 'tap', 'homebrew/cask-fonts'])
         if tap.returncode != 0:
             print_red("Could not tap homebrew/cask-fonts")
@@ -251,14 +251,17 @@ def main():
         print_red("🚫 setup.json has not been found")
         exit(1)
 
-    if not (args.setup or args.installs or args.uninstalls or args.all):
+    if not (args.setup or args.installs or args.uninstalls or args.fonts or args.all):
         print_red("🚫 No arguments passed... ❌")
         exit(1)
 
     setup_file = open('setup.json', mode='r')
     setup_json = json.load(setup_file)
 
-    packages = setup_json.get('packages', [])
+    packages = setup_json.get('packages_server', [])
+    
+
+
     fonts = setup_json.get('fonts', [])
 
     if args.setup or args.all:
@@ -272,9 +275,6 @@ def main():
 
     if args.fonts or args.all:
         install_fonts(fonts)
-
-    if args.files or args.all:
-        set
 
     print_green("🎉 Setup Complete 🎉")
 
