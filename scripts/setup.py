@@ -237,6 +237,12 @@ def uninstall():
             print_red(f"🚫 Failed to uninstall {package}")
 
 
+def is_desktop():
+    """
+    Checks if the current machine is a desktop or not, by checking if display is set
+    """
+    return os.environ.get('DISPLAY') is not None
+
 def main():
     parser = argparse.ArgumentParser(description='Setup dotfiles')
     parser.add_argument('--setup', action='store_true', help='Setup dotfiles')
@@ -259,8 +265,11 @@ def main():
     setup_json = json.load(setup_file)
 
     packages = setup_json.get('packages_server', [])
-    
+    if is_desktop():
+        print_yellow("🖥️ Running on a desktop, adding desktop packages")
+        packages.extend(setup_json.get('packages_desktop', []))
 
+        
 
     fonts = setup_json.get('fonts', [])
 
