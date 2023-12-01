@@ -15,3 +15,5 @@ starship themes not showing up:
 
 packer not working:
 - https://github.com/wbthomason/packer.nvim/issues/943
+
+- ran into an issue where letters would double type themselves, fixed by removing xterm-kitty because set to TERM env variable
