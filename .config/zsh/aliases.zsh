@@ -84,8 +84,8 @@ alias get-gpg-sk="gpg --list-keys | awk 'FNR > 3 {print $1; exit}'"
 # get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3 | head -5'
 
-if hash exa >> /dev/null 2>&1; then
-    alias ls='exa --icons --long --header --git'
+if hash eza >> /dev/null 2>&1; then
+    alias ls='eza --icons --long --header --git'
     alias l="ls -all"
     alias ll=ls
     alias ln="ls -snew"
@@ -102,3 +102,4 @@ alias gd='git diff'
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
+bindkey -e
