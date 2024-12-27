@@ -30,7 +30,6 @@ zsh_add_plugin "romkatv/zsh-defer"
 
 eval "$(starship init zsh)"
 
-add_all_ssh $1
 
 # Colors
 autoload -Uz colors && colors
@@ -43,5 +42,3 @@ if [[ $1 == "--debug" ]]; then
     zprof
 fi
 
-# bun completions
-[ -s "/home/damon/.bun/_bun" ] && source "/home/damon/.bun/_bun"

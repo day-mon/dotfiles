@@ -1,0 +1,6 @@
+shell-integration = zsh
+font-family = JetBrains Mono
+theme = N0tch2k
+title = Terminal
+window-padding-y = 4,4
+window-padding-x = 4,4
