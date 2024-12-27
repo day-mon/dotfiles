@@ -15,20 +15,19 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[0;33m'
 NC = '\033[0m'
 
-
-def print_yellow(text):
+def print_yellow(text: str) -> None:
     print(f"{YELLOW}{text}{NC}")
 
 
-def print_green(text):
+def print_green(text: str) -> None:
     print(f"{GREEN}{text}{NC}")
 
 
-def print_red(text):
+def print_red(text: str) -> None:
     print(f"{RED}{text}{NC}")
 
 
-def symlink(src, dst):
+def symlink(src: str, dst: str) -> None:
     # check if sym link exists
     if os.path.islink(dst):
         print_yellow(f"🔗 {dst} is already symlinked to {os.readlink(dst)}")
@@ -74,7 +73,7 @@ def setup():
         symlink(os.path.join(config_dir, file), os.path.join(os.path.expanduser("~/.config"), file))
 
 
-def important_installs(packages: List[str]):
+def important_installs(packages: list[str]) -> None:
     if not shutil.which("pacman") and not shutil.which("brew"):
         print_red("🚫 Pacman or Brew not found... ❌")
         exit(1)
@@ -152,7 +151,7 @@ def important_installs(packages: List[str]):
             print_red("🖼 Setting background....❌ (feh command failed)")
 
 
-def install_fonts(fonts: List[str]):
+def install_fonts(fonts: list[str]):
     if shutil.which('brew'):
         tap = subprocess.run(['brew', 'tap', 'homebrew/cask-fonts'])
         if tap.returncode != 0:
@@ -163,7 +162,7 @@ def install_fonts(fonts: List[str]):
         if install.returncode != 0:
             print_red("Could not install font-hack-nerd-font")
             exit(1)
-
+        
         print_green("✅ Fonts installed successfully!")
         return
 
@@ -237,7 +236,7 @@ def uninstall():
             print_red(f"🚫 Failed to uninstall {package}")
 
 
-def is_desktop():
+def is_desktop() -> str | None:
     """
     Checks if the current machine is a desktop or not, by checking if display is set
     """
