@@ -1,6 +1,9 @@
 shell-integration = zsh
-font-family = JetBrains Mono
+font-family = Fira Mono
 theme = N0tch2k
 title = Terminal
-window-padding-y = 4,4
-window-padding-x = 4,4
+window-vsync = true
+window-padding-x = 15,15
+window-padding-y = 15,15
+font-size = 16
+font-thicken = true
