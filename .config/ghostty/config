@@ -1,9 +1,11 @@
 shell-integration = zsh
-font-family = Fira Mono
-theme = N0tch2k
+font-family = "Geist Mono" 
+theme = vesper 
 title = Terminal
 window-vsync = true
 window-padding-x = 15,15
 window-padding-y = 15,15
-font-size = 16
+font-size = 18
+font-feature = -liga
 font-thicken = true
+term = xterm
