@@ -1,291 +1,206 @@
-import os
-import subprocess
-from typing import List
-from urllib.parse import urlparse
-import shutil
-import argparse
-from sys import platform
-import requests
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#   'httpx',
+#   'trio',
+#   'asyncclick'
+# ]
+
 import json
-import zipfile
-from pathlib import Path
+import shutil
+from dataclasses import dataclass
+from urllib.parse import urlparse
 
-RED = '\033[0;31m'
-GREEN = '\033[0;32m'
-YELLOW = '\033[0;33m'
-NC = '\033[0m'
-
-def print_yellow(text: str) -> None:
-    print(f"{YELLOW}{text}{NC}")
+import asyncclick as click
+import trio
 
 
-def print_green(text: str) -> None:
-    print(f"{GREEN}{text}{NC}")
+CONFIG_PATH = trio.Path("setup.json")
 
 
-def print_red(text: str) -> None:
-    print(f"{RED}{text}{NC}")
+@dataclass(frozen=True)
+class Paths:
+    home: trio.Path
+    ssh: trio.Path
+    dotfiles: trio.Path
+    home_config: trio.Path
+    zshrc: trio.Path
+    zshenv: trio.Path
 
 
-def symlink(src: str, dst: str) -> None:
-    # check if sym link exists
-    if os.path.islink(dst):
-        print_yellow(f"🔗 {dst} is already symlinked to {os.readlink(dst)}")
+async def get_paths() -> Paths:
+    home = await trio.Path("~").expanduser()
+    return Paths(
+        home=home,
+        ssh=home / ".ssh",
+        dotfiles=home / ".important" / "dotfiles",
+        home_config=home / ".config",
+        zshrc=home / ".zshrc",
+        zshenv=home / ".zshenv",
+    )
+
+
+async def run(cmd: list[str], *, check: bool = True):
+    return await trio.run_process(cmd, check=check)
+
+
+async def symlink(src: trio.Path, dst: trio.Path) -> None:
+    if await dst.exists():
+        if await dst.is_symlink():
+            click.secho(f"⚠️{dst} -> {src} already exists", fg="yellow")
+            return
+        click.echo(f"{dst} exists and is not a symlink", err=True)
         return
 
-    try:
-        os.symlink(src, dst)
-        print_green(f"🔗 Symlinked {src} to {dst}\n")
-    except:
-        print_red(f"🚫 Symlink failed {src} to {dst}\n")
+    await dst.symlink_to(
+        target=src,
+        target_is_directory=await src.is_dir(),
+    )
+    click.secho(f"✅ {dst} → {src}", fg="green")
 
 
-def setup():
-    remote_url = subprocess.check_output(["git", "remote", "get-url", "origin"]).decode().strip()
+async def setup_ssh(paths: Paths):
+    if not await paths.ssh.exists():
+        await paths.ssh.mkdir(parents=True, exist_ok=True)
+        await run(["chmod", "700", str(paths.ssh)])
 
-    # check if its an ssh url or not
-    parsed = urlparse(remote_url)
-    if parsed.scheme != 'git':
-        remote_url = remote_url.replace("https://", "git@", 1).replace(".com/", ".com:", 1)
-        subprocess.run(["git", "remote", "set-url", "origin", remote_url])
-        print_green("🔐 SSH URL Check (Switching to SSH)... ✅\n")
-    else:
-        print_yellow("🔐 SSH URL Check (Already set)... ✅\n")
+    key_path = paths.ssh / "id_ed25519"
 
-    ssh_dir = os.path.expanduser("~/.ssh")
-    if not os.path.exists(ssh_dir):
-        os.makedirs(ssh_dir)
+    if not await key_path.exists():
+        await run(
+            [
+                "ssh-keygen",
+                "-t",
+                "ed25519",
+                "-f",
+                str(key_path),
+                "-N",
+                "",
+                "-C",
+                "dotfiles-setup",
+            ]
+        )
 
-    dotfiles_dir = os.path.join(os.path.expanduser("~/.important/dotfiles"))
-    zsh_directory = f"{dotfiles_dir}/.config/zsh"
+    ssh_config_path = paths.ssh / "config"
+    config_block = f"""Host *
+    UseKeychain yes
+    AddKeysToAgent yes
+    IdentityFile {key_path}
+"""
 
-    if not os.path.exists(f"{zsh_directory}/.zshenv"):
-        with open(f"{zsh_directory}/.zshenv", "x") as file:
-            file.write("export ZDOTDIR=$HOME/.config/zsh\n")
-        print("📝 Created .zshenv file, place your env variables here")
+    if not await ssh_config_path.exists():
+        async with await trio.open_file(ssh_config_path, "w") as f:
+            await f.write(config_block)
+        await run(["chmod", "600", str(ssh_config_path)])
 
-    print("🔗 Establishing Sym Links...")
-    symlink(os.path.join(zsh_directory, ".zshrc"), os.path.join(os.path.expanduser("~/.zshrc")))
-    symlink(os.path.join(zsh_directory, ".zshenv"), os.path.join(os.path.expanduser("~/.zshenv")))
+    await run(["ssh-add", str(key_path)], check=False)
 
-    config_dir = os.path.join(dotfiles_dir, ".config")
-    for file in os.listdir(config_dir):
-        symlink(os.path.join(config_dir, file), os.path.join(os.path.expanduser("~/.config"), file))
-
-
-def important_installs(packages: list[str]) -> None:
-    if not shutil.which("pacman") and not shutil.which("brew"):
-        print_red("🚫 Pacman or Brew not found... ❌")
-        exit(1)
-
-    print_green(f"🔍 You are running {platform.lower()}  ✅")
-
-    if not shutil.which("git"):
-        print("📦 Git not found.. Installing so we can continue")
-        if not shutil.which('pacman'):
-            subprocess.run(["brew", "install", "git"])
-        else:
-            subprocess.run(["sudo", "pacman", "--noconfirm", "-S", "git"])
-
-    if not shutil.which("paru") and shutil.which('pacman'):
-        subprocess.run(["sudo", "pacman", "-S", "--needed", "base-devel"])
-        subprocess.run(["git", "clone", "https://aur.archlinux.org/paru.git"])
-        subprocess.run(["makepkg", "-si"], cwd="paru")
-        shutil.rmtree("paru")
-
-    if shutil.which('pacman'):
-        subprocess.run(["sudo", "pacman", "-Syyu", "--noconfirm", "--quiet"])
-    else:
-        subprocess.run(["brew", "update"])
-
-    already_installed = 0
-    installed = 0
-    failed_installs = 0
-
-    for package in packages:
-        args_to_run = ["sudo", "pacman", "-S", "--noconfirm", "--quiet", package] if shutil.which('pacman') else [
-            "brew", "install", package
-        ]
-
-        sp = subprocess.run(args_to_run, stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-        if sp.returncode == 0:
-            already_installed += 1
-            print_yellow(f"🔍 {package} is already installed")
-            continue
-
-        args_to_run = ["paru", "-S", "--noconfirm", "--quiet", package] if shutil.which('pacman') else [
-            "brew", "install", package
-        ]
-
-        sp = subprocess.run(args_to_run, stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-        if sp.returncode == 0:
-            installed += 1
-            print_green(f"✅ Installed {package}")
-            continue
-
-        if shutil.which('pacman'):
-            sp = subprocess.run(["paru", "-S", "--noconfirm", "--quiet", package], stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL)
-            if sp.returncode == 0:
-                installed += 1
-                print_green(f"✅ Installed {package}")
-                continue
-
-        failed_installs += 1
-        print_red(f"🚫 Failed to install {package}")
-
-    print_green(f"\n✅ Installed {installed} packages")
-    print(f""" Summary
-    ✅ Already Installed: {already_installed}
-    ✅ Installed: {installed}/{len(packages)}
-    🚫 Failed Installs: {failed_installs}
-    """)
-
-    if shutil.which("feh"):
-        wallpaper_location = os.path.expanduser("~/.important/dotfiles/wallpapers/wallpaper.jpg")
-
-        bg = subprocess.run(["feh", "--bg-fill", f"{wallpaper_location}"])
-        if bg.returncode != 0:
-            print_red("🖼 Setting background....❌ (feh command failed)")
+    async with await trio.open_file(f"{key_path}.pub", "r") as f:
+        click.echo(await f.read())
 
 
-def install_fonts(fonts: list[str]):
-    if shutil.which('brew'):
-        tap = subprocess.run(['brew', 'tap', 'homebrew/cask-fonts'])
-        if tap.returncode != 0:
-            print_red("Could not tap homebrew/cask-fonts")
-            exit(1)
+async def dotfiles_setup(paths: Paths):
+    origin = await trio.run_process(
+        ["git", "remote", "get-url", "origin"],
+        capture_stdout=True,
+        capture_stderr=True,
+        check=False,
+    )
 
-        install = subprocess.run(['brew', 'install', '--cask', 'font-hack-nerd-font'])
-        if install.returncode != 0:
-            print_red("Could not install font-hack-nerd-font")
-            exit(1)
-        
-        print_green("✅ Fonts installed successfully!")
+    if origin.returncode != 0:
         return
 
-    # Create .local/share/fonts directory if it doesn't exist
-    font_dir = Path.home() / ".local" / "share" / "fonts"
-    font_dir.mkdir(parents=True, exist_ok=True)
+    remote_url = origin.stdout.decode().strip()
+    if urlparse(remote_url).scheme != "git":
+        ssh_url = remote_url.replace("https://", "git@", 1).replace(".com/", ".com:", 1)
+        await run(["git", "remote", "set-url", "origin", ssh_url])
 
-    # Download and unzip fonts
-    for font_url in fonts:
-        font_name = os.path.basename(font_url)
-        font_zip = font_dir / font_name
+    zsh_dir = paths.dotfiles / ".config" / "zsh"
+    zsh_env = zsh_dir / ".zshenv"
 
-        # Download font zip file
-        print(f"📥 Downloading {font_url}...")
-        response = requests.get(font_url)
-        if response.status_code != 200:
-            print(f"❌ Could not download {font_name}, skipping...")
-            continue
-        with open(font_zip, "wb") as file:
-            file.write(response.content)
-        print(f"✅ Downloaded {font_name}")
+    if not await zsh_dir.exists():
+        await zsh_dir.mkdir(parents=True, exist_ok=True)
 
-        # Unzip font zip file
-        print(f"📦 Unzipping {font_name}...")
-        try:
-            with zipfile.ZipFile(font_zip, "r") as zip_ref:
-                zip_ref.extractall(font_dir)
-        except zipfile.BadZipFile:
-            print(f"❌ Could not unzip {font_name}, skipping...")
-            continue
-        print(f"✅ Unzipped & Installed {font_name}")
+    if not await zsh_env.exists():
+        async with await trio.open_file(zsh_env, "w") as f:
+            await f.write("export ZDOTDIR=$HOME/.config/zsh\n")
 
-    # Update font cache
-    print("🔄 Updating font cache...")
-    try:
-        os.system("fc-cache -f -v")
-    except OSError:
-        print("❌ Could not update font cache")
-        exit(1)
-    print("✅ Font cache updated!")
+    if not await paths.home_config.exists():
+        await paths.home_config.mkdir(parents=True, exist_ok=True)
 
-    # Cleanup downloaded zip files
-    print("🗂️ Running cleanup...")
-    for font_url in fonts:
-        font_name = os.path.basename(font_url)
-        font_zip = font_dir / font_name
-        font_zip.unlink(missing_ok=True)
-    print("✅ Cleaned up all zips")
-    print("✅ Fonts installed successfully")
+    async with trio.open_nursery() as nursery:
+        nursery.start_soon(symlink, zsh_dir / ".zshrc", paths.zshrc)
+        nursery.start_soon(symlink, zsh_dir / ".zshenv", paths.zshenv)
+
+        config_root = paths.dotfiles / ".config"
+        if await config_root.exists():
+            for entry in await config_root.iterdir():
+                nursery.start_soon(
+                    symlink,
+                    entry,
+                    paths.home_config / entry.name,
+                )
 
 
-def uninstall():
-    if platform.lower() != 'linux':
-        print("ℹ️ Bailing not linux")
+async def important_installs(packages: list[str]):
+    if not packages or not shutil.which("brew"):
         return
 
-    packages = ['i3status', 'i3blocks']
-
-    for package in packages:
-        spc = subprocess.run(['sudo', 'pacman', '-Q', package], stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL)
-        if spc.returncode == 1:
-            print_green(f"✅ {package} already doesnt exit")
-            continue
-
-        sp = subprocess.run(["sudo", "pacman", "-R", "--noconfirm", package], stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-        if sp.returncode == 0:
-            print_green(f"✅ Uninstalled {package}")
-        else:
-            print_red(f"🚫 Failed to uninstall {package}")
+    await run(["brew", "update"])
+    await run(["brew", "install"] + packages, check=False)
 
 
-def is_desktop() -> str | None:
-    """
-    Checks if the current machine is a desktop or not, by checking if display is set
-    """
-    return os.environ.get('DISPLAY') is not None
+async def uninstall_packages(packages: list[str]):
+    if packages:
+        await run(["brew", "uninstall"] + packages, check=False)
 
-def main():
-    parser = argparse.ArgumentParser(description='Setup dotfiles')
-    parser.add_argument('--setup', action='store_true', help='Setup dotfiles')
-    parser.add_argument('--uninstalls', action='store_true', help='Uninstalls common packages that are annoying')
-    parser.add_argument('--installs', action='store_true', help='Install important packages')
-    parser.add_argument("--fonts", action='store_true', help='Install fonts')
-    parser.add_argument("--files", action='store_true', help='Setup env files and the like')
-    parser.add_argument("--all", action='store_true', help="Install all")
-    args = parser.parse_args()
 
-    if not os.path.exists("setup.json"):
-        print_red("🚫 setup.json has not been found")
-        exit(1)
+async def install_fonts(fonts: list[str]):
+    if fonts:
+        await run(["brew", "install", "--cask"] + fonts, check=False)
 
-    if not (args.setup or args.installs or args.uninstalls or args.fonts or args.all):
-        print_red("🚫 No arguments passed... ❌")
-        exit(1)
 
-    setup_file = open('setup.json', mode='r')
-    setup_json = json.load(setup_file)
+@click.command()
+@click.option("--setup", is_flag=True)
+@click.option("--ssh", is_flag=True)
+@click.option("--uninstalls", is_flag=True)
+@click.option("--installs", is_flag=True)
+@click.option("--fonts", is_flag=True)
+@click.option("--complete", is_flag=True)
+@click.pass_context
+async def main(
+    ctx: click.Context,
+    setup: bool,
+    ssh: bool,
+    uninstalls: bool,
+    installs: bool,
+    fonts: bool,
+    complete: bool,
+):
+    if not any([setup, ssh, uninstalls, installs, fonts, complete]):
+        click.echo(ctx.get_help())
+        return
 
-    packages = setup_json.get('packages_server', [])
-    if is_desktop():
-        print_yellow("🖥️ Running on a desktop, adding desktop packages")
-        packages.extend(setup_json.get('packages_desktop', []))
+    paths = await get_paths()
 
-        
+    async with await trio.open_file(CONFIG_PATH, "r") as f:
+        config = json.loads(await f.read())
 
-    fonts = setup_json.get('fonts', [])
+    if ssh or complete:
+        await setup_ssh(paths)
 
-    if args.setup or args.all:
-        setup()
+    if setup or complete:
+        await dotfiles_setup(paths)
 
-    if args.uninstalls or args.all:
-        uninstall()
+    if uninstalls or complete:
+        await uninstall_packages(config.get("uninstall_packages", []))
 
-    if args.installs or args.all:
-        important_installs(packages)
+    if installs or complete:
+        await important_installs(config.get("packages", []))
 
-    if args.fonts or args.all:
-        install_fonts(fonts)
-
-    print_green("🎉 Setup Complete 🎉")
+    if fonts or complete:
+        await install_fonts(config.get("fonts", []))
 
 
 if __name__ == "__main__":
-    main()
+    main(_anyio_backend="trio")

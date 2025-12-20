@@ -26,8 +26,6 @@ zsh_add_plugin "hlissner/zsh-autopair"
 zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 zsh_add_plugin "mafredri/zsh-async"
 zsh_add_plugin "romkatv/zsh-defer"
-# For more plugins: https://github.com/unixorn/awesome-zsh-plugins
-
 eval "$(starship init zsh)"
 
 # Colors
