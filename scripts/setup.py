@@ -5,6 +5,7 @@
 #   'trio',
 #   'asyncclick'
 # ]
+# ///
 
 import json
 import shutil
@@ -15,7 +16,7 @@ import asyncclick as click
 import trio
 
 
-CONFIG_PATH = trio.Path("setup.json")
+CONFIG_PATH = trio.Path(__file__).parent / trio.Path("setup.json")
 
 
 @dataclass(frozen=True)
