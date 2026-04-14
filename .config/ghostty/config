@@ -1,7 +1,7 @@
 shell-integration = zsh
-font-family = "Geist Mono" 
-theme = vesper 
-title = Terminal
+font-family = "Geist Mono"
+theme = vesper
+title = Ghostty
 window-vsync = true
 window-padding-x = 15,15
 window-padding-y = 15,15

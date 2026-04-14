@@ -11,12 +11,8 @@ fi
 
 setopt inc_append_history share_history
 
-# Source useful functions (from chris@machine)
 source "$ZDOTDIR/functions.zsh"
 
-
-# Sourced files
-# zsh_add_file "zsh-executions"
 zsh_add_file "aliases.zsh"
 
 # Plugins

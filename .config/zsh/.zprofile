@@ -1,6 +1,6 @@
 export VISUAL="nvim"
 eval "$(/opt/homebrew/bin/brew shellenv)"
-eval "$(/Users/damon/.local/bin/mise activate zsh)"
+eval "$($HOME/.local/bin/mise activate zsh)"
 export TERM=xterm
 
 # Added by OrbStack: command-line tools and integration
