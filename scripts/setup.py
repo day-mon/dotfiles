@@ -129,6 +129,9 @@ async def dotfiles_setup(paths: Paths):
     if not await paths.home_config.exists():
         await paths.home_config.mkdir(parents=True, exist_ok=True)
 
+    # copy .claude/ contents to ~/.claude/
+    await copy_claude_files(paths)
+
     async with trio.open_nursery() as nursery:
         nursery.start_soon(symlink, zsh_dir / ".zshrc", paths.zshrc)
         nursery.start_soon(symlink, zsh_dir / ".zshenv", paths.zshenv)
@@ -141,6 +144,29 @@ async def dotfiles_setup(paths: Paths):
                     entry,
                     paths.home_config / entry.name,
                 )
+
+
+async def copy_claude_files(paths: Paths) -> None:
+    """Copy .claude/ contents from dotfiles to ~/.claude/"""
+    src_claude = paths.dotfiles / ".claude"
+    dst_claude = paths.home / ".claude"
+
+    if not await src_claude.exists():
+        return
+
+    if not await dst_claude.exists():
+        await dst_claude.mkdir(parents=True, exist_ok=True)
+
+    for entry in await src_claude.iterdir():
+        dst_entry = dst_claude / entry.name
+        if await entry.is_dir():
+            if await dst_entry.exists():
+                shutil.rmtree(dst_entry)
+            shutil.copytree(entry, dst_entry)
+            click.secho(f"📁 copied {entry.name}/ → ~/.claude/", fg="green")
+        elif await entry.is_file():
+            shutil.copy2(entry, dst_entry)
+            click.secho(f"📄 copied {entry.name} → ~/.claude/", fg="green")
 
 
 async def brew_bundle(paths: Paths):
