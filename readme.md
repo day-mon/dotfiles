@@ -10,7 +10,6 @@ personal dotfiles for zsh, neovim, starship, and friends.
 | `nvim` | neovim with astronvim-based lua config |
 | `starship` | minimal shell prompt |
 | `ghostty` | terminal emulator config |
-| `rofi` | app launcher + powermenu (linux only) |
 
 ## quick setup
 
