@@ -1,9 +1,0 @@
-#!/bin/env bash
-
-if [ $(pidof redshift) ]
-then
-    redshift -x
-    killall -q redshift
-else
-    redshift
-fi

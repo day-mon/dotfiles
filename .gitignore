@@ -4,3 +4,5 @@ secrets
 .gitconfig
 .zcompdump
 .zsh_history
+**/zed/prompt/**
+.confg/zed/prompts/**

@@ -1,0 +1,161 @@
+{
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always",
+          },
+        },
+      },
+      "enable_lsp_tasks": true,
+    },
+    "biome": {
+      "settings": {
+        "inline_config": {
+          "linter": {
+            "rules": {
+              "performance": "all",
+              "correctness": "all",
+              "suspicious": "all",
+              "complexity": "all",
+            },
+            "domains": {
+              "playwright": "all",
+              "test": "all",
+              "types": "all",
+              "react": "all",
+            },
+          },
+        },
+      },
+    },
+    "ruff": {
+      "initialization_options": {
+        "lint": {
+          "extendSelect": [
+            "PTH",
+            "ARG",
+            "RET",
+            "RSE",
+            "PYI",
+            "EM",
+            "DTZ",
+            "ASYNC",
+            "ANN",
+            "TC",
+            "I",
+            "B",
+            "FAST",
+            "RUF",
+            "TRY",
+            "FURB",
+            "PERF",
+          ],
+        },
+      },
+    },
+  },
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+    },
+  },
+  "agent": {
+    "favorite_models": [],
+    "single_file_review": true,
+    "model_parameters": [],
+  },
+  "project_panel": {
+    "bold_folder_labels": true,
+    "hide_gitignore": true,
+  },
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000,
+    },
+  },
+  "relative_line_numbers": "enabled",
+  "icon_theme": {
+    "mode": "light",
+    "light": "Colored Zed Icons Theme Dark",
+    "dark": "Colored Zed Icons Theme Dark",
+  },
+  "base_keymap": "JetBrains",
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "dark",
+    "light": "Ayu Light",
+    "dark": "JetBrains Dark",
+  },
+  "ui_font_family": "GeistMono Nerd Font Mono",
+  "terminal": {
+    "font_family": "GeistMono Nerd Font Mono",
+    "shell": "system",
+  },
+  "tabs": {
+    "git_status": true,
+    "file_icons": true,
+    "show_diagnostics": "errors",
+  },
+  "indent_guides": {
+    "enabled": true,
+    "coloring": "indent_aware",
+  },
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    // above is default from Zed
+    "**/out",
+    "**/dist",
+    "**/.husky",
+    "**/.turbo",
+    "**/.vscode-test",
+    "**/.vscode",
+    "**/.next",
+    "**/.storybook",
+    "**/.tap",
+    "**/.nyc_output",
+    "**/report",
+    "**/node_modules",
+  ],
+  "telemetry": {
+    "diagnostics": true,
+    "metrics": false,
+  },
+  "languages": {
+    "TypeScript": {
+      "language_servers": ["tsgo", "biome", "!vtsls"],
+    },
+    "TSX": {
+      "language_servers": ["tsgo", "biome", "!vtsls"],
+    },
+    "Python": {
+      "language_servers": [
+        "ty",
+        "pyrefly",
+        "ruff",
+        "!pyright",
+        "!basedpyright",
+      ],
+    },
+  },
+  "auto_install_extensions": {
+    "git-firefly": true,
+    "ruff": true,
+    "toml": true,
+    "pyrefly": true,
+  },
+}

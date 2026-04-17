@@ -1,11 +1,22 @@
 [user]
-	email = EMAIL
-	name = NAME 
-	signingKey = GPGKEY 
+    email = [EMAIL]
+    name = Damon Montague
+    signingKey = [KEY]
 [commit]
-	gpgSign = true
+    gpgSign = true
 [push]
-	autoSetupRemote = true
+    autoSetupRemote = true
 [core]
-	autocrlf = input
-	editor = nvim
+    autocrlf = input
+    editor = "zed --wait"
+	pager = delta
+[pull]
+	rebase = false
+[interactive]
+	diffFilter = delta --color-only
+[delta]
+	navigate = true
+	dark = true
+ 	side-by-side = true
+[merge]
+	conflictStyle = zdiff3

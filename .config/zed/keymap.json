@@ -1,0 +1,23 @@
+[
+  {
+    "context": "Terminal",
+    "bindings": {
+      "shift-enter": [
+        "terminal::SendText",
+        "\u001b\r"
+      ]
+    }
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "cmd-shift-t": "terminal_panel::Toggle"
+    }
+  },
+  {
+    "context": "Workspace || Editor",
+    "unbind": {
+      "alt-f12": "terminal_panel::Toggle"
+    }
+  }
+]

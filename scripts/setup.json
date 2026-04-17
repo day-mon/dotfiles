@@ -49,16 +49,17 @@
     "font-terminess-ttf-nerd-font",
     "font-tinos-nerd-font",
     "font-ubuntu-nerd-font",
-    "font-victor-mono-nerd-font"
+    "font-victor-mono-nerd-font",
+    "font-geist-mono-nerd-font"
   ],
   "packages": [
     "bat",
     "eza",
+    "git-delta",
     "fzf",
     "ripgrep",
     "fd",
     "tldr",
-    "htop",
     "btop",
     "jq",
     "git",
@@ -74,15 +75,8 @@
     "go",
     "rust",
     "docker",
-    "mackup",
-    "mas",
-    "rectangle",
-    "alfred",
-    "iterm2",
     "raycast",
-    "stats",
-    "vlc",
-    "arc"
+    "stats"
   ],
   "uninstall_packages": []
 }
