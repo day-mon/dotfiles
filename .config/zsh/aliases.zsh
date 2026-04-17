@@ -90,6 +90,11 @@ alias gp='git push'
 alias gc='git commit'
 alias gd='git diff'
 
+# process killing with uv script
+alias killport='uv run ~/.important/dotfiles/scripts/kill.py port'
+alias prkill='uv run ~/.important/dotfiles/scripts/kill.py name'
+alias prkillro='uv run ~/.important/dotfiles/scripts/kill.py name -r'
+
 # Auto binds cntrl arrows to back and forward
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
