@@ -143,12 +143,14 @@ async def dotfiles_setup(paths: Paths):
                 )
 
 
-async def important_installs(packages: list[str]):
-    if not packages or not shutil.which("brew"):
+async def brew_bundle(paths: Paths):
+    if not shutil.which("brew"):
         return
-
-    await run(["brew", "update"])
-    await run(["brew", "install"] + packages, check=False)
+    brewfile = paths.dotfiles / "Brewfile"
+    if not await brewfile.exists():
+        click.echo("⚠️ Brewfile not found", err=True)
+        return
+    await run(["brew", "bundle", "--file", str(brewfile)])
 
 
 async def uninstall_packages(packages: list[str]):
@@ -156,9 +158,26 @@ async def uninstall_packages(packages: list[str]):
         await run(["brew", "uninstall"] + packages, check=False)
 
 
-async def install_fonts(fonts: list[str]):
-    if fonts:
-        await run(["brew", "install", "--cask"] + fonts, check=False)
+async def custom_installs(installs: dict[str, str]):
+    for name, cmd in installs.items():
+        if shutil.which(name):
+            click.secho(f"⚠️ {name} already installed", fg="yellow")
+            continue
+        click.echo(f"🔧 installing {name}...")
+        await run(["sh", "-c", cmd], check=False)
+
+
+async def install_uv_tools(tools: list[str], upgrade: bool = False):
+    if not tools or not shutil.which("uv"):
+        click.echo("⚠️ uv not found, skipping uv tool installs", err=True)
+        return
+    for tool in tools:
+        click.echo(f"📦 uv tool install {tool}...")
+        cmd = ["uv", "tool", "install"]
+        if upgrade:
+            cmd.append("--upgrade")
+        cmd.append(tool)
+        await run(cmd, check=False)
 
 
 @click.command()
@@ -168,6 +187,7 @@ async def install_fonts(fonts: list[str]):
 @click.option("--installs", is_flag=True)
 @click.option("--fonts", is_flag=True)
 @click.option("--complete", is_flag=True)
+@click.option("--upgrade", is_flag=True, help="upgrade existing uv tools")
 @click.pass_context
 async def main(
     ctx: click.Context,
@@ -177,6 +197,7 @@ async def main(
     installs: bool,
     fonts: bool,
     complete: bool,
+    upgrade: bool,
 ):
     if not any([setup, ssh, uninstalls, installs, fonts, complete]):
         click.echo(ctx.get_help())
@@ -197,11 +218,13 @@ async def main(
         await uninstall_packages(config.get("uninstall_packages", []))
 
     if installs or complete:
-        await important_installs(config.get("packages", []))
+        await brew_bundle(paths)
 
-    if fonts or complete:
-        await install_fonts(config.get("fonts", []))
+    if installs or complete:
+        await custom_installs(config.get("custom_installs", {}))
+        await install_uv_tools(config.get("uv_tools", []), upgrade=upgrade)
 
 
 if __name__ == "__main__":
+
     main(_anyio_backend="trio")
