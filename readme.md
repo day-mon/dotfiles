@@ -18,36 +18,35 @@ personal dotfiles for zsh, neovim, starship, and friends.
 git clone https://github.com/day-mon/dotfiles.git ~/.important/dotfiles
 cd ~/.important/dotfiles
 
-# run full setup (symlinks + homebrew packages + fonts + ssh key)
-python scripts/setup.py --complete
+# run full setup (installs uv, then symlinks + homebrew packages + fonts + ssh key)
+./bootstrap.sh --complete
 
 # or just symlink dotfiles
-python scripts/setup.py --setup
+./bootstrap.sh --setup
 ```
 
 ## setup script options
 
 ```sh
-python scripts/setup.py --help
+uv run scripts/setup.py --help
 
   --setup      symlink dotfiles to ~/.config
   --ssh        generate ssh key and configure
   --installs   install packages from setup.json
-  --fonts      install nerd fonts
+  --upgrade    upgrade existing uv tools
   --complete   do everything
 ```
 
 ## adding packages/fonts
 
-edit `scripts/setup.json`, then re-run:
+edit `Brewfile` for homebrew packages/fonts, or edit `scripts/setup.json` for uv tools, then re-run:
 
 ```sh
-python scripts/setup.py --installs
-python scripts/setup.py --fonts
+uv run scripts/setup.py --installs
 ```
 
 ## requirements
 
 - macos (uses homebrew)
-- python 3.12+
+- [uv](https://docs.astral.sh/uv/)
 - zsh
