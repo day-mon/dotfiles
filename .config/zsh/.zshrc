@@ -23,9 +23,12 @@ zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 zsh_add_plugin "mafredri/zsh-async"
 zsh_add_plugin "romkatv/zsh-defer"
 eval "$(starship init zsh)"
+eval "$(direnv hook zsh)"
+
 
 # Colors
 autoload -Uz colors && colors
+fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
 autoload -Uz compinit
 [ ! "$(find ~/.config/zsh/.zcompdump -mtime 1)" ] || compinit
 compinit -C
