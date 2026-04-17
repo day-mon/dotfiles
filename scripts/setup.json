@@ -78,5 +78,13 @@
     "raycast",
     "stats"
   ],
-  "uninstall_packages": []
+  "uninstall_packages": [],
+  "custom_installs": {
+    "uv": "curl -LsSf https://astral.sh/uv/install.sh | sh",
+    "cargo": "curl https://sh.rustup.rs -sSf | sh"
+  },
+  "uv_tools": [
+    "ruff",
+    "ty"
+  ]
 }
