@@ -19,12 +19,17 @@ brew "topgrade"
 brew "curl"
 brew "watch"
 
-# langs
 brew "go"
 
-# apps
+brew "uv"
+
 cask "raycast"
 cask "stats"
+
+uv "ruff"
+uv "ty"
+uv "tombi"
+uv "pyrefly"
 
 # fonts
 cask "font-3270-nerd-font"
