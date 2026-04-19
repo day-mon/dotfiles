@@ -193,19 +193,6 @@ async def custom_installs(installs: dict[str, str]):
         await run(["sh", "-c", cmd], check=False)
 
 
-async def install_uv_tools(tools: list[str], upgrade: bool = False):
-    if not tools or not shutil.which("uv"):
-        click.echo("⚠️ uv not found, skipping uv tool installs", err=True)
-        return
-    for tool in tools:
-        click.echo(f"📦 uv tool install {tool}...")
-        cmd = ["uv", "tool", "install"]
-        if upgrade:
-            cmd.append("--upgrade")
-        cmd.append(tool)
-        await run(cmd, check=False)
-
-
 @click.command()
 @click.option("--setup", is_flag=True)
 @click.option("--ssh", is_flag=True)
@@ -213,7 +200,6 @@ async def install_uv_tools(tools: list[str], upgrade: bool = False):
 @click.option("--installs", is_flag=True)
 @click.option("--fonts", is_flag=True)
 @click.option("--complete", is_flag=True)
-@click.option("--upgrade", is_flag=True, help="upgrade existing uv tools")
 @click.pass_context
 async def main(
     ctx: click.Context,
@@ -223,7 +209,6 @@ async def main(
     installs: bool,
     fonts: bool,
     complete: bool,
-    upgrade: bool,
 ):
     if not any([setup, ssh, uninstalls, installs, fonts, complete]):
         click.echo(ctx.get_help())
@@ -248,7 +233,6 @@ async def main(
 
     if installs or complete:
         await custom_installs(config.get("custom_installs", {}))
-        await install_uv_tools(config.get("uv_tools", []), upgrade=upgrade)
 
 
 if __name__ == "__main__":
