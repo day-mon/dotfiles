@@ -41,7 +41,7 @@
           ],
         },
       },
-      "extensions": [".py*"],
+      "extensions": [".py", ".pyi", ".pyw"],
     },
     "biome": {
       "command": ["bunx", "--bun", "@biomejs/biome", "lsp-proxy"],
@@ -63,14 +63,29 @@
           },
         },
       },
-      "extensions": [".js*", ".ts*"],
+      "extensions": [
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs",
+        ".ts",
+        ".tsx",
+        ".mts",
+        ".cts",
+      ],
     },
     "pyrefly": {
       "command": ["uvx", "--python", "3.12", "pyrefly", "server"],
-      "extensions": [".py*"],
+      "extensions": [".py", ".pyi", ".pyw"],
     },
   },
   "watcher": {
-    "ignore": ["node_modules/**", "dist/**", ".git/**", "*venv*"],
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*venv*",
+      "**__pycache__**",
+    ],
   },
 }
