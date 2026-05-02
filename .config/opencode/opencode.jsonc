@@ -1,16 +1,18 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": ["docs/**/*.md"],
-  "shell": "zsh",
   "agent": {
     "general": {
       "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
     },
     "build": {
       "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
     },
     "plan": {
       "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
     },
   },
   "lsp": {
@@ -67,5 +69,8 @@
       "command": ["uvx", "--python", "3.12", "pyrefly", "server"],
       "extensions": [".py*"],
     },
+  },
+  "watcher": {
+    "ignore": ["node_modules/**", "dist/**", ".git/**", "*venv*"],
   },
 }
