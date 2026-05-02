@@ -161,16 +161,16 @@ async def copy_claude_files(paths: Paths) -> None:
         dst_entry = dst_claude / entry.name
         if await entry.is_dir():
             if await dst_entry.exists():
-                shutil.rmtree(dst_entry)
-            shutil.copytree(entry, dst_entry)
+                await trio.to_thread.run_sync(shutil.rmtree, dst_entry)
+            await trio.to_thread.run_sync(shutil.copytree, entry, dst_entry)
             click.secho(f"📁 copied {entry.name}/ → ~/.claude/", fg="green")
         elif await entry.is_file():
-            shutil.copy2(entry, dst_entry)
+            await trio.to_thread.run_sync(shutil.copy2, entry, dst_entry)
             click.secho(f"📄 copied {entry.name} → ~/.claude/", fg="green")
 
 
 async def brew_bundle(paths: Paths):
-    if not shutil.which("brew"):
+    if not await trio.to_thread.run_sync(shutil.which, "brew"):
         return
     brewfile = paths.dotfiles / "Brewfile"
     if not await brewfile.exists():
@@ -186,7 +186,7 @@ async def uninstall_packages(packages: list[str]):
 
 async def custom_installs(installs: dict[str, str]):
     for name, cmd in installs.items():
-        if shutil.which(name):
+        if await trio.to_thread.run_sync(shutil.which, name):
             click.secho(f"⚠️ {name} already installed", fg="yellow")
             continue
         click.echo(f"🔧 installing {name}...")
