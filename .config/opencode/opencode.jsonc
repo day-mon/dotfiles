@@ -1,0 +1,71 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["docs/**/*.md"],
+  "shell": "zsh",
+  "agent": {
+    "general": {
+      "prompt": "{file:./prompts/damon.md}",
+    },
+    "build": {
+      "prompt": "{file:./prompts/damon.md}",
+    },
+    "plan": {
+      "prompt": "{file:./prompts/damon.md}",
+    },
+  },
+  "lsp": {
+    "ruff": {
+      "command": ["uvx", "--python", "3.12", "ruff", "server"],
+      "initialization": {
+        "lint": {
+          "extendSelect": [
+            "PTH",
+            "ARG",
+            "RET",
+            "RSE",
+            "PYI",
+            "EM",
+            "DTZ",
+            "ASYNC",
+            "ANN",
+            "TC",
+            "I",
+            "B",
+            "FAST",
+            "RUF",
+            "TRY",
+            "FURB",
+            "PERF",
+          ],
+        },
+      },
+      "extensions": [".py*"],
+    },
+    "biome": {
+      "command": ["bunx", "--bun", "@biomejs/biome", "lsp-proxy"],
+      "initialization": {
+        "inline_config": {
+          "linter": {
+            "rules": {
+              "performance": "all",
+              "correctness": "all",
+              "suspicious": "all",
+              "complexity": "all",
+            },
+            "domains": {
+              "playwright": "all",
+              "test": "all",
+              "types": "all",
+              "react": "all",
+            },
+          },
+        },
+      },
+      "extensions": [".js*", ".ts*"],
+    },
+    "pyrefly": {
+      "command": ["uvx", "--python", "3.12", "pyrefly", "server"],
+      "extensions": [".py*"],
+    },
+  },
+}

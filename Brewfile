@@ -25,6 +25,7 @@ brew "go"
 # apps
 cask "raycast"
 cask "stats"
+cask "zed"
 
 # fonts
 cask "font-3270-nerd-font"

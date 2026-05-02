@@ -37,3 +37,6 @@ compinit -C
 if [[ $1 == "--debug" ]]; then
     zprof
 fi
+
+# bun completions
+[ -s "/Users/damon/.bun/_bun" ] && source "/Users/damon/.bun/_bun"
