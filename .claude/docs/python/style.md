@@ -10,6 +10,30 @@
 - **constants**: all caps for true constants only
   - good: `MAX_RETRIES`, `DEFAULT_TIMEOUT`
 
+## constants
+
+for module-level constants that hold collections, use immutable types to prevent accidental mutation.
+
+```python
+# good — immutable
+ALLOWED_METHODS: frozenset[str] = frozenset(["GET", "POST", "PUT"])
+DEFAULT_HEADERS: MappingProxyType[str, str] = MappingProxyType({"content-type": "application/json"})
+STATUS_CODES: tuple[int, ...] = (200, 201, 204)
+
+# bad — mutable
+ALLOWED_METHODS = ["GET", "POST", "PUT"]
+DEFAULT_HEADERS = {"content-type": "application/json"}
+STATUS_CODES = [200, 201, 204]
+```
+
+| mutable | immutable |
+|---------|-----------|
+| `list` | `tuple` |
+| `set` | `frozenset` |
+| `dict` | `types.MappingProxyType` |
+
+> `MappingProxyType` is from `types` — `from types import MappingProxyType`.
+
 ## walrus operator
 
 use `:=` for assignment expressions where it eliminates redundant calls or improves flow.
