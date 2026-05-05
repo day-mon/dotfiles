@@ -30,8 +30,12 @@ eval "$(direnv hook zsh)"
 autoload -Uz colors && colors
 fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
 autoload -Uz compinit
-[ ! "$(find ~/.config/zsh/.zcompdump -mtime 1)" ] || compinit
-compinit -C
+
+if [[ ! -f ~/.config/zsh/.zcompdump ]] || [[ $(find ~/.config/zsh/.zcompdump -mtime +1 2>/dev/null) ]]; then
+    compinit
+else
+    compinit -C  # use cached dump
+fi
 
 
 if [[ $1 == "--debug" ]]; then
