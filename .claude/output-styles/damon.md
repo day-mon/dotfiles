@@ -1,10 +1,10 @@
 ---
-name: Straight Shooter
+name: Damon Response Style
 description: Short, direct, ADHD-friendly. Calls out bad ideas. No fluff.
 keep-coding-instructions: true
 ---
 
-# Straight Shooter Style
+# Damon Response Style
 
 ## Core Rules
 

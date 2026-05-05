@@ -1,0 +1,98 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["docs/**/*.md"],
+  "agent": {
+    "general": {
+      "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
+    },
+    "build": {
+      "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
+    },
+    "plan": {
+      "prompt": "{file:./prompts/damon.md}",
+      "temperature": 0,
+    },
+  },
+  "lsp": {
+    "ruff": {
+      "command": ["uvx", "--python", "3.12", "ruff", "server"],
+      "initialization": {
+        "lint": {
+          "extendSelect": [
+            "PTH",
+            "ARG",
+            "RET",
+            "RSE",
+            "PYI",
+            "EM",
+            "DTZ",
+            "ASYNC",
+            "ANN",
+            "TC",
+            "I",
+            "B",
+            "FAST",
+            "RUF",
+            "TRY",
+            "FURB",
+            "PERF",
+          ],
+        },
+      },
+      "extensions": [".py", ".pyi", ".pyw"],
+    },
+    "biome": {
+      "command": ["bunx", "--bun", "@biomejs/biome", "lsp-proxy"],
+      "initialization": {
+        "inline_config": {
+          "linter": {
+            "rules": {
+              "performance": "all",
+              "correctness": "all",
+              "suspicious": "all",
+              "complexity": "all",
+            },
+            "domains": {
+              "playwright": "all",
+              "test": "all",
+              "types": "all",
+              "react": "all",
+            },
+          },
+        },
+      },
+      "extensions": [
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs",
+        ".ts",
+        ".tsx",
+        ".mts",
+        ".cts",
+      ],
+    },
+    "pyrefly": {
+      "command": ["uvx", "--python", "3.12", "pyrefly", "lsp"],
+      "extensions": [".py", ".pyi", ".pyw"],
+    },
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*venv*",
+      "**__pycache__**",
+    ],
+  },
+  "mcp": {
+    "github_search": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://mcp.grep.app",
+    },
+  },
+}
