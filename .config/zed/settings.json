@@ -1,28 +1,29 @@
 {
+  "cli_default_open_behavior": "existing_window",
   "outline_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "collaboration_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "git_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "lsp": {
     "vtsls": {
       "settings": {
         "typescript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
+            "enabled": "always",
+          },
         },
         "javascript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        }
+            "enabled": "always",
+          },
+        },
       },
-      "enable_lsp_tasks": true
+      "enable_lsp_tasks": true,
     },
     "biome": {
       "settings": {
@@ -32,17 +33,17 @@
               "performance": "all",
               "correctness": "all",
               "suspicious": "all",
-              "complexity": "all"
+              "complexity": "all",
             },
             "domains": {
               "playwright": "all",
               "test": "all",
               "types": "all",
-              "react": "all"
-            }
-          }
-        }
-      }
+              "react": "all",
+            },
+          },
+        },
+      },
     },
     "ruff": {
       "initialization_options": {
@@ -64,19 +65,22 @@
             "RUF",
             "TRY",
             "FURB",
-            "PERF"
-          ]
-        }
-      }
-    }
+            "PERF",
+          ],
+        },
+      },
+    },
   },
   "agent_servers": {
     "opencode": {
-      "type": "registry"
+      "favorite_config_option_values": {
+        "model": ["opencode/kimi-k2.6"],
+      },
+      "type": "registry",
     },
     "claude-acp": {
-      "type": "registry"
-    }
+      "type": "registry",
+    },
   },
   "agent": {
     "dock": "left",
@@ -84,25 +88,25 @@
     "single_file_review": true,
     "model_parameters": [
       {
-        "temperature": 0
-      }
-    ]
+        "temperature": 0,
+      },
+    ],
   },
   "project_panel": {
     "dock": "right",
     "bold_folder_labels": true,
-    "hide_gitignore": true
+    "hide_gitignore": true,
   },
   "autosave": {
     "after_delay": {
-      "milliseconds": 1000
-    }
+      "milliseconds": 1000,
+    },
   },
   "relative_line_numbers": "enabled",
   "icon_theme": {
     "mode": "dark",
     "light": "Colored Zed Icons Theme Dark",
-    "dark": "Colored Zed Icons Theme Dark"
+    "dark": "Colored Zed Icons Theme Dark",
   },
   "base_keymap": "JetBrains",
   "ui_font_size": 16,
@@ -110,21 +114,21 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "JetBrains Dark"
+    "dark": "JetBrains Dark",
   },
   "ui_font_family": "GeistMono Nerd Font Mono",
   "terminal": {
     "font_family": "GeistMono Nerd Font Mono",
-    "shell": "system"
+    "shell": "system",
   },
   "tabs": {
     "git_status": true,
     "file_icons": true,
-    "show_diagnostics": "errors"
+    "show_diagnostics": "errors",
   },
   "indent_guides": {
     "enabled": true,
-    "coloring": "indent_aware"
+    "coloring": "indent_aware",
   },
   "file_scan_exclusions": [
     "**/.git",
@@ -147,30 +151,40 @@
     "**/.tap",
     "**/.nyc_output",
     "**/report",
-    "**/node_modules"
+    "**/node_modules",
   ],
   "telemetry": {
     "diagnostics": true,
-    "metrics": false
+    "metrics": false,
   },
   "languages": {
     "TypeScript": {
       "language_servers": ["tsgo", "biome", "!vtsls"],
       "inlay_hints": {
-        "enabled": true
-      }
+        "enabled": true,
+      },
     },
     "TSX": {
-      "language_servers": ["tsgo", "biome", "!vtsls"]
+      "language_servers": ["tsgo", "biome", "!vtsls"],
     },
     "Python": {
       "colorize_brackets": true,
-      "language_servers": ["ty", "pyrefly", "ruff", "!pyright", "!basedpyright"]
-    }
+      "language_servers": [
+        "ty",
+        "pyrefly",
+        "ruff",
+        "!pyright",
+        "!basedpyright",
+      ],
+      "code_actions_on_format": {
+        "source.organizeImports.ruff": true,
+        "source.fixAll.ruff": true,
+      },
+    },
   },
   "diff_view_style": "split",
   "toolbar": {
-    "quick_actions": false
+    "quick_actions": false,
   },
   "auto_install_extensions": {
     "git-firefly": true,
@@ -179,6 +193,6 @@
     "pyrefly": true,
     "dockerfile": true,
     "bione": true,
-    "tombi": true
-  }
+    "tombi": true,
+  },
 }

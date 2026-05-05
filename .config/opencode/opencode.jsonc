@@ -75,7 +75,7 @@
       ],
     },
     "pyrefly": {
-      "command": ["uvx", "--python", "3.12", "pyrefly", "server"],
+      "command": ["uvx", "--python", "3.12", "pyrefly", "lsp"],
       "extensions": [".py", ".pyi", ".pyw"],
     },
   },
@@ -87,5 +87,12 @@
       "*venv*",
       "**__pycache__**",
     ],
+  },
+  "mcp": {
+    "github_search": {
+      "type": "remote",
+      "enabled": true,
+      "url": "https://mcp.grep.app",
+    },
   },
 }
