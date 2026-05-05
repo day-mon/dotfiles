@@ -1,4 +1,14 @@
 {
+  "cli_default_open_behavior": "existing_window",
+  "outline_panel": {
+    "dock": "right",
+  },
+  "collaboration_panel": {
+    "dock": "right",
+  },
+  "git_panel": {
+    "dock": "right",
+  },
   "lsp": {
     "vtsls": {
       "settings": {
@@ -62,16 +72,28 @@
     },
   },
   "agent_servers": {
+    "opencode": {
+      "favorite_config_option_values": {
+        "model": ["opencode/kimi-k2.6"],
+      },
+      "type": "registry",
+    },
     "claude-acp": {
       "type": "registry",
     },
   },
   "agent": {
+    "dock": "left",
     "favorite_models": [],
     "single_file_review": true,
-    "model_parameters": [],
+    "model_parameters": [
+      {
+        "temperature": 0,
+      },
+    ],
   },
   "project_panel": {
+    "dock": "right",
     "bold_folder_labels": true,
     "hide_gitignore": true,
   },
@@ -82,7 +104,7 @@
   },
   "relative_line_numbers": "enabled",
   "icon_theme": {
-    "mode": "light",
+    "mode": "dark",
     "light": "Colored Zed Icons Theme Dark",
     "dark": "Colored Zed Icons Theme Dark",
   },
@@ -138,11 +160,15 @@
   "languages": {
     "TypeScript": {
       "language_servers": ["tsgo", "biome", "!vtsls"],
+      "inlay_hints": {
+        "enabled": true,
+      },
     },
     "TSX": {
       "language_servers": ["tsgo", "biome", "!vtsls"],
     },
     "Python": {
+      "colorize_brackets": true,
       "language_servers": [
         "ty",
         "pyrefly",
@@ -150,12 +176,23 @@
         "!pyright",
         "!basedpyright",
       ],
+      "code_actions_on_format": {
+        "source.organizeImports.ruff": true,
+        "source.fixAll.ruff": true,
+      },
     },
+  },
+  "diff_view_style": "split",
+  "toolbar": {
+    "quick_actions": false,
   },
   "auto_install_extensions": {
     "git-firefly": true,
     "ruff": true,
     "toml": true,
     "pyrefly": true,
+    "dockerfile": true,
+    "bione": true,
+    "tombi": true,
   },
 }

@@ -25,6 +25,7 @@ brew "uv"
 
 cask "raycast"
 cask "stats"
+cask "zed"
 
 uv "ruff"
 uv "ty"
