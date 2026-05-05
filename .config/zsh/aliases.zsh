@@ -89,6 +89,7 @@ alias gs='git status'
 alias gp='git push'
 alias gc='git commit'
 alias gd='git diff'
+alias gcb='git checkout -b'
 
 # process killing with uv script
 alias killport='uv run ~/.important/dotfiles/scripts/kill.py port'

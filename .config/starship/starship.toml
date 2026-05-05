@@ -1,13 +1,12 @@
-# Get editor completions based on the config schema
-"$schema" = 'https://starship.rs/config-schema.json'
+"$schema" = "https://starship.rs/config-schema.json"
 
 # Inserts a blank line between shell prompts
 add_newline = false
 
-# Default prompt format 
+# Default prompt format
 format = "$all"
 
-[character] 
+[character]
 success_symbol = "[λ](bold green)"
 error_symbol = "[λ](bold red)"
 vicmd_symbol = "[](bold yellow)"

@@ -4,6 +4,7 @@
 # dependencies = ["psutil", "click"]
 # ///
 """Kill processes by port, name, or PID."""
+
 import subprocess
 import sys
 
@@ -42,7 +43,6 @@ def kill(pid: int, name: str | None = None) -> bool:
         click.secho(f"Failed to terminate: {e}", fg="red", err=True)
         return False
 
-    # Wait up to 5 seconds
     try:
         proc.wait(timeout=5)
         click.secho(f"✓ {label} killed gracefully", fg="green")
@@ -50,7 +50,6 @@ def kill(pid: int, name: str | None = None) -> bool:
     except psutil.TimeoutExpired:
         pass
 
-    # Force kill
     click.echo(f"Force killing {label} with SIGKILL...")
     try:
         proc.kill()
@@ -72,8 +71,7 @@ def cli():
 @click.argument("port", type=int)
 def port(port: int) -> None:
     """Kill process on a given port."""
-    pid = get_pid_on_port(port)
-    if pid is None:
+    if not (pid := get_pid_on_port(port)):
         click.secho(f"No process on port {port}", fg="red", err=True)
         raise sys.exit(1)
     click.echo(f"Found PID {pid} on port {port}")
@@ -85,12 +83,10 @@ def port(port: int) -> None:
 @click.option("-r", "--restart", is_flag=True, help="restart after killing")
 def name(name: str, restart: bool) -> None:
     """Kill process by name."""
-    pid = find_pid(name)
-    if pid is None:
+    if not (pid := find_pid(name)):
         click.secho(f"No process named '{name}'", fg="red", err=True)
         raise sys.exit(1)
-    success = kill(pid, name)
-    if restart and success:
+    if restart and (success := kill(pid, name)):
         click.echo(f"Restarting {name}...")
         subprocess.Popen(name, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     sys.exit(0 if success else 1)
