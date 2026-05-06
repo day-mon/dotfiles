@@ -1,1 +1,1 @@
-/Users/damon/.important/dotfiles/.claude/output-styles/damon.md
+../../../.claude/output-styles/damon.md
