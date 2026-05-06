@@ -1,5 +1,6 @@
 {
   "cli_default_open_behavior": "existing_window",
+  "code_lens": "on",
   "outline_panel": {
     "dock": "right",
   },
@@ -115,6 +116,9 @@
     "mode": "dark",
     "light": "Ayu Light",
     "dark": "JetBrains Dark",
+  },
+  "file_types": {
+    "Dockerfile": ["Dockerfile*"],
   },
   "ui_font_family": "GeistMono Nerd Font Mono",
   "terminal": {

@@ -88,6 +88,7 @@
       "**__pycache__**",
     ],
   },
+  "disabled_providers": [],
   "mcp": {
     "github_search": {
       "type": "remote",
@@ -95,4 +96,77 @@
       "url": "https://mcp.grep.app",
     },
   },
+  "provider": {
+    "Company": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "{env:OPENCODE_COMPANY_NAME}",
+      "options": {
+        "baseURL": "{env:OPENCODE_COMPANY_BASE_URL}",
+        "apiKey": "{env:OPENCODE_API_KEY}",
+      },
+      "models": {
+        "gpt-5.5": {
+          "name": "GPT 5.5",
+          "limit": {
+            "context": 1000000,
+            "output": 128000,
+            "input": 1050000,
+          },
+          "cost": {
+            "input": 5,
+            "output": 30,
+          },
+        },
+        "us.anthropic.claude-opus-4-6-v1": {
+          "name": "Claude Opus 4.6",
+          "limit": {
+            "context": 1000000,
+            "output": 128000,
+            "input": 1050000,
+          },
+          "cost": {
+            "input": 5,
+            "output": 25,
+          },
+        },
+        "us.anthropic.claude-opus-4-7": {
+          "name": "Claude Opus 4.7",
+          "limit": {
+            "context": 1000000,
+            "output": 128000,
+            "input": 1050000,
+          },
+          "cost": {
+            "input": 5,
+            "output": 25,
+          },
+        },
+        "moonshotai.kimi-k2.5": {
+          "name": "Kimi K2.5",
+          "limit": {
+            "context": 262144,
+            "output": 64000,
+            "input": 262144,
+          },
+          "cost": {
+            "input": 0.6,
+            "output": 3,
+          },
+        },
+        "qwen.qwen3-coder-480b": {
+          "name": "Qwen 3 Coder 480B",
+          "limit": {
+            "context": 262144,
+            "output": 65536,
+            "input": 262144,
+          },
+          "cost": {
+            "input": 0.5,
+            "output": 2,
+          },
+        },
+      },
+    },
+  },
+  "plugin": ["opencode-notify", "@tarquinen/opencode-dcp@latest"],
 }

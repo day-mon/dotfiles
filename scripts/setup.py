@@ -10,6 +10,7 @@
 import json
 import shutil
 from dataclasses import dataclass
+from pathlib import Path
 from urllib.parse import urlparse
 
 import asyncclick as click
@@ -46,10 +47,20 @@ async def run(cmd: list[str], *, check: bool = True):
 
 
 async def symlink(src: trio.Path, dst: trio.Path) -> None:
-    if await dst.exists():
-        if await dst.is_symlink():
-            click.secho(f"⚠️{dst} -> {src} already exists", fg="yellow")
+    if not await src.exists():
+        click.secho(f"⚠️ source does not exist: {src}", fg="yellow")
+        return
+
+    dst_path = Path(str(dst))
+    if dst_path.is_symlink():
+        if await dst.exists():
+            click.secho(f"⚠️ {dst} -> {src} already exists", fg="yellow")
             return
+        # broken symlink — remove and recreate
+        dst_path.unlink()
+        click.secho(f"🔗 removing broken symlink: {dst}", fg="red")
+
+    if await dst.exists():
         click.echo(f"{dst} exists and is not a symlink", err=True)
         return
 
@@ -58,6 +69,7 @@ async def symlink(src: trio.Path, dst: trio.Path) -> None:
         target_is_directory=await src.is_dir(),
     )
     click.secho(f"✅ {dst} → {src}", fg="green")
+
 
 
 async def setup_ssh(paths: Paths):
