@@ -3,7 +3,7 @@
 # dependencies = [
 #   'httpx',
 #   'trio',
-#   'asyncclick'
+#   'cyclopts',
 # ]
 # ///
 
@@ -12,9 +12,17 @@ import shutil
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
-import asyncclick as click
 import trio
+from cyclopts import App
+from rich.console import Console
 
+app = App(
+    backend="trio",
+    help="Dotfiles setup — run specific steps or --complete for everything.",
+    help_on_error=False,
+)
+console = Console()
+error_console = Console(stderr=True)
 
 CONFIG_PATH = trio.Path(__file__).parent / trio.Path("setup.json")
 
@@ -48,19 +56,20 @@ async def run(cmd: list[str], *, check: bool = True):
 async def symlink(src: trio.Path, dst: trio.Path) -> None:
     if await dst.exists():
         if await dst.is_symlink():
-            click.secho(f"⚠️{dst} -> {src} already exists", fg="yellow")
+            console.print(f"⚠️ {dst} -> {src} already exists", style="yellow")
             return
-        click.echo(f"{dst} exists and is not a symlink", err=True)
+        error_console.print(f"{dst} exists and is not a symlink")
         return
 
     await dst.symlink_to(
         target=src,
         target_is_directory=await src.is_dir(),
     )
-    click.secho(f"✅ {dst} → {src}", fg="green")
+    console.print(f"✅ {dst} → {src}", style="green")
 
 
 async def setup_ssh(paths: Paths):
+    """Generate SSH key and configure ~/.ssh/config."""
     if not await paths.ssh.exists():
         await paths.ssh.mkdir(parents=True, exist_ok=True)
         await run(["chmod", "700", str(paths.ssh)])
@@ -97,10 +106,11 @@ async def setup_ssh(paths: Paths):
     await run(["ssh-add", str(key_path)], check=False)
 
     async with await trio.open_file(f"{key_path}.pub", "r") as f:
-        click.echo(await f.read())
+        console.print(await f.read())
 
 
 async def dotfiles_setup(paths: Paths):
+    """Symlink dotfiles and set up zsh configuration."""
     origin = await trio.run_process(
         ["git", "remote", "get-url", "origin"],
         capture_stdout=True,
@@ -129,7 +139,6 @@ async def dotfiles_setup(paths: Paths):
     if not await paths.home_config.exists():
         await paths.home_config.mkdir(parents=True, exist_ok=True)
 
-    # copy .claude/ contents to ~/.claude/
     await copy_claude_files(paths)
 
     async with trio.open_nursery() as nursery:
@@ -147,7 +156,7 @@ async def dotfiles_setup(paths: Paths):
 
 
 async def copy_claude_files(paths: Paths) -> None:
-    """Copy .claude/ contents from dotfiles to ~/.claude/"""
+    """Copy .claude/ contents from dotfiles to ~/.claude/."""
     src_claude = paths.dotfiles / ".claude"
     dst_claude = paths.home / ".claude"
 
@@ -163,55 +172,54 @@ async def copy_claude_files(paths: Paths) -> None:
             if await dst_entry.exists():
                 await trio.to_thread.run_sync(shutil.rmtree, dst_entry)
             await trio.to_thread.run_sync(shutil.copytree, entry, dst_entry)
-            click.secho(f"📁 copied {entry.name}/ → ~/.claude/", fg="green")
+            console.print(f"📁 copied {entry.name}/ → ~/.claude/", style="green")
         elif await entry.is_file():
             await trio.to_thread.run_sync(shutil.copy2, entry, dst_entry)
-            click.secho(f"📄 copied {entry.name} → ~/.claude/", fg="green")
+            console.print(f"📄 copied {entry.name} → ~/.claude/", style="green")
 
 
 async def brew_bundle(paths: Paths):
+    """Run `brew bundle` with the project Brewfile."""
     if not await trio.to_thread.run_sync(shutil.which, "brew"):
         return
     brewfile = paths.dotfiles / "Brewfile"
     if not await brewfile.exists():
-        click.echo("⚠️ Brewfile not found", err=True)
+        error_console.print("⚠️ Brewfile not found")
         return
     await run(["brew", "bundle", "--file", str(brewfile)])
 
 
 async def uninstall_packages(packages: list[str]):
+    """Uninstall the given brew packages."""
     if packages:
         await run(["brew", "uninstall"] + packages, check=False)
 
 
 async def custom_installs(installs: dict[str, str]):
+    """Run custom install scripts for each tool."""
     for name, cmd in installs.items():
         if await trio.to_thread.run_sync(shutil.which, name):
-            click.secho(f"⚠️ {name} already installed", fg="yellow")
+            console.print(f"⚠️ {name} already installed", style="yellow")
             continue
-        click.echo(f"🔧 installing {name}...")
+        console.print(f"🔧 installing {name}...")
         await run(["sh", "-c", cmd], check=False)
 
 
-@click.command()
-@click.option("--setup", is_flag=True)
-@click.option("--ssh", is_flag=True)
-@click.option("--uninstalls", is_flag=True)
-@click.option("--installs", is_flag=True)
-@click.option("--fonts", is_flag=True)
-@click.option("--complete", is_flag=True)
-@click.pass_context
+@app.default
 async def main(
-    ctx: click.Context,
-    setup: bool,
-    ssh: bool,
-    uninstalls: bool,
-    installs: bool,
-    fonts: bool,
-    complete: bool,
+    *,
+    setup: bool = False,
+    ssh: bool = False,
+    uninstalls: bool = False,
+    installs: bool = False,
+    complete: bool = False,
 ):
-    if not any([setup, ssh, uninstalls, installs, fonts, complete]):
-        click.echo(ctx.get_help())
+    """Dotfiles setup — run one or more steps.
+
+    Pass no flags to see this help. Use --complete to run everything.
+    """
+    if not any([setup, ssh, uninstalls, installs, complete]):
+        app.help_print()
         return
 
     paths = await get_paths()
@@ -236,5 +244,4 @@ async def main(
 
 
 if __name__ == "__main__":
-
-    main(_anyio_backend="trio")
+    app()
