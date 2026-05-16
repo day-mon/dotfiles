@@ -16,6 +16,9 @@
     },
   },
   "lsp": {
+    "pyright": {
+      "disabled": true,
+    },
     "ruff": {
       "command": ["uvx", "--python", "3.12", "ruff", "server"],
       "initialization": {

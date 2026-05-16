@@ -1,0 +1,361 @@
+{
+  "main": {
+    "prefix": "gomain",
+    "body": [
+      "package main",
+      "",
+      "func main() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "package main + func main() boilerplate"
+  },
+  "if err != nil { return err }": {
+    "prefix": "ierr",
+    "body": [
+      "if err != nil {",
+      "\treturn $0",
+      "}"
+    ],
+    "description": "if err != nil { return ... }"
+  },
+  "if err != nil { return nil, err }": {
+    "prefix": "ierrn",
+    "body": [
+      "if err != nil {",
+      "\treturn nil, ${0:err}",
+      "}"
+    ],
+    "description": "if err != nil { return nil, err }"
+  },
+  "if err != nil { log.Fatal(err) }": {
+    "prefix": "ifatal",
+    "body": [
+      "if err != nil {",
+      "\tlog.Fatal(err)",
+      "}",
+      "$0"
+    ],
+    "description": "if err != nil { log.Fatal(err) }"
+  },
+  "http handler": {
+    "prefix": "handler",
+    "body": [
+      "func ${1:name}(w http.ResponseWriter, r *http.Request) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "http.HandlerFunc signature"
+  },
+  "http handler with error": {
+    "prefix": "handlerr",
+    "body": [
+      "func ${1:name}(w http.ResponseWriter, r *http.Request) error {",
+      "\t$0",
+      "}"
+    ],
+    "description": "http handler returning error (for errgroup pattern)"
+  },
+  "http server": {
+    "prefix": "httpserv",
+    "body": [
+      "srv := &http.Server{",
+      "\tAddr:    \":${1:8080}\",",
+      "\tHandler: ${2:nil},",
+      "}",
+      "",
+      "log.Printf(\"listening on %s\", srv.Addr)",
+      "if err := srv.ListenAndServe(); err != nil {",
+      "\tlog.Fatal(err)",
+      "}",
+      "$0"
+    ],
+    "description": "basic http.Server setup"
+  },
+  "http mux route": {
+    "prefix": "mux",
+    "body": [
+      "mux := http.NewServeMux()",
+      "mux.HandleFunc(\"${1:GET} ${2:/path}\", ${3:handler})",
+      "$0"
+    ],
+    "description": "http.NewServeMux with route"
+  },
+  "struct": {
+    "prefix": "st",
+    "body": [
+      "type ${1:Name} struct {",
+      "\t$0",
+      "}"
+    ],
+    "description": "struct type definition"
+  },
+  "struct with json tags": {
+    "prefix": "stj",
+    "body": [
+      "type ${1:Name} struct {",
+      "\t${2:Field} ${3:string} `json:\"${4:field}\"`",
+      "}",
+      "$0"
+    ],
+    "description": "struct with json tags"
+  },
+  "interface": {
+    "prefix": "iface",
+    "body": [
+      "type ${1:Name} interface {",
+      "\t$0",
+      "}"
+    ],
+    "description": "interface type definition"
+  },
+  "constructor": {
+    "prefix": "newfn",
+    "body": [
+      "func New${1:Name}(${2:args}) *${1:Name} {",
+      "\treturn &${1:Name}{",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "constructor function returning pointer"
+  },
+  "test function": {
+    "prefix": "tfn",
+    "body": [
+      "func Test${1:Name}(t *testing.T) {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Test function signature"
+  },
+  "table driven test": {
+    "prefix": "tdt",
+    "body": [
+      "func Test${1:Name}(t *testing.T) {",
+      "\ttests := []struct {",
+      "\t\tname string",
+      "\t\tinput ${2:string}",
+      "\t\twant  ${3:string}",
+      "\t}{",
+      "\t\t{name: \"${4:basic}\", input: ${5:\"\"}, want: ${6:\"\"}},",
+      "\t}",
+      "",
+      "\tfor _, tt := range tests {",
+      "\t\tt.Run(tt.name, func(t *testing.T) {",
+      "\t\t\tgot := ${7:fn(tt.input)}",
+      "\t\t\tif got != tt.want {",
+      "\t\t\t\tt.Errorf(\"got %v, want %v\", got, tt.want)",
+      "\t\t\t}",
+      "\t\t})",
+      "\t}",
+      "}"
+    ],
+    "description": "table-driven test skeleton"
+  },
+  "benchmark function": {
+    "prefix": "bfn",
+    "body": [
+      "func Benchmark${1:Name}(b *testing.B) {",
+      "\tfor range b.N {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Benchmark function signature"
+  },
+  "init function": {
+    "prefix": "initfn",
+    "body": [
+      "func init() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "func init()"
+  },
+  "goroutine + WaitGroup": {
+    "prefix": "gowg",
+    "body": [
+      "var wg sync.WaitGroup",
+      "wg.Add(${1:1})",
+      "",
+      "go func() {",
+      "\tdefer wg.Done()",
+      "\t$0",
+      "}()",
+      "",
+      "wg.Wait()"
+    ],
+    "description": "goroutine with sync.WaitGroup"
+  },
+  "goroutine + errgroup": {
+    "prefix": "goeg",
+    "body": [
+      "g, ctx := errgroup.WithContext(context.Background())",
+      "",
+      "g.Go(func() error {",
+      "\t$0",
+      "\treturn nil",
+      "})",
+      "",
+      "if err := g.Wait(); err != nil {",
+      "\treturn err",
+      "}"
+    ],
+    "description": "golang.org/x/sync/errgroup pattern"
+  },
+  "select": {
+    "prefix": "sel",
+    "body": [
+      "select {",
+      "case <-${1:ctx}.Done():",
+      "\treturn ${2:nil}",
+      "case ${3:val} := <-${4:ch}:",
+      "\t$0",
+      "}"
+    ],
+    "description": "select with ctx.Done()"
+  },
+  "for range slice": {
+    "prefix": "forr",
+    "body": [
+      "for _, ${1:v} := range ${2:slice} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "for range slice/map"
+  },
+  "for range channel": {
+    "prefix": "forc",
+    "body": [
+      "for ${1:v} := range ${2:ch} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "for range channel"
+  },
+  "context background": {
+    "prefix": "ctxbg",
+    "body": [
+      "ctx := context.Background()",
+      "$0"
+    ],
+    "description": "context.Background()"
+  },
+  "context with timeout": {
+    "prefix": "ctxto",
+    "body": [
+      "ctx, cancel := context.WithTimeout(context.Background(), ${1:5*time.Second})",
+      "defer cancel()",
+      "$0"
+    ],
+    "description": "context.WithTimeout with defer cancel"
+  },
+  "context with cancel": {
+    "prefix": "ctxca",
+    "body": [
+      "ctx, cancel := context.WithCancel(context.Background())",
+      "defer cancel()",
+      "$0"
+    ],
+    "description": "context.WithCancel with defer cancel"
+  },
+  "defer close": {
+    "prefix": "deferclose",
+    "body": [
+      "defer ${1:res}.Close()",
+      "$0"
+    ],
+    "description": "defer resource.Close()"
+  },
+  "slog logger setup": {
+    "prefix": "sloginit",
+    "body": [
+      "logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{",
+      "\tLevel: slog.Level${1:Info},",
+      "}))",
+      "",
+      "slog.SetDefault(logger)",
+      "$0"
+    ],
+    "description": "slog JSON logger setup"
+  },
+  "slog error": {
+    "prefix": "slogerr",
+    "body": [
+      "slog.Error(\"${1:msg}\", \"err\", ${2:err})",
+      "$0"
+    ],
+    "description": "slog.Error with err attr"
+  },
+  "flag parse": {
+    "prefix": "flagmain",
+    "body": [
+      "var ${1:addr} = flag.String(\"${2:addr}\", \"${3::8080}\", \"${4:listen address}\")",
+      "",
+      "flag.Parse()",
+      "$0"
+    ],
+    "description": "flag.String + flag.Parse()"
+  },
+  "go:embed": {
+    "prefix": "embed",
+    "body": [
+      "//go:embed ${1:file.txt}",
+      "var ${2:content} embed.FS",
+      "$0"
+    ],
+    "description": "//go:embed directive"
+  },
+  "http middleware": {
+    "prefix": "mid",
+    "body": [
+      "func ${1:name}(next http.Handler) http.Handler {",
+      "\treturn http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {",
+      "\t\t$0",
+      "\t\tnext.ServeHTTP(w, r)",
+      "\t})",
+      "}"
+    ],
+    "description": "HTTP middleware pattern"
+  },
+  "http JSON response": {
+    "prefix": "jsonres",
+    "body": [
+      "w.Header().Set(\"Content-Type\", \"application/json\")",
+      "if err := json.NewEncoder(w).Encode(${1:data}); err != nil {",
+      "\thttp.Error(w, err.Error(), http.StatusInternalServerError)",
+      "\treturn",
+      "}",
+      "$0"
+    ],
+    "description": "JSON response encoder"
+  },
+  "http JSON decode": {
+    "prefix": "jsondec",
+    "body": [
+      "var ${1:body} ${2:Type}",
+      "if err := json.NewDecoder(r.Body).Decode(&${1:body}); err != nil {",
+      "\thttp.Error(w, \"invalid JSON\", http.StatusBadRequest)",
+      "\treturn",
+      "}",
+      "defer r.Body.Close()",
+      "$0"
+    ],
+    "description": "JSON request decoder"
+  },
+  "custom error type": {
+    "prefix": "errtype",
+    "body": [
+      "type ${1:Name}Error struct {",
+      "\t${2:Field} ${3:string}",
+      "}",
+      "",
+      "func (e *${1:Name}Error) Error() string {",
+      "\treturn fmt.Sprintf(\"${4:%s}\", e.${2:Field})",
+      "}",
+      "$0"
+    ],
+    "description": "custom error type implementing error interface"
+  }
+}
