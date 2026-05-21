@@ -4,6 +4,7 @@
   "outline_panel": {
     "dock": "right",
   },
+  "code_lens": "on",
   "collaboration_panel": {
     "dock": "right",
   },
@@ -11,21 +12,7 @@
     "dock": "right",
   },
   "lsp": {
-    "vtsls": {
-      "settings": {
-        "typescript": {
-          "updateImportsOnFileMove": {
-            "enabled": "always",
-          },
-        },
-        "javascript": {
-          "updateImportsOnFileMove": {
-            "enabled": "always",
-          },
-        },
-      },
-      "enable_lsp_tasks": true,
-    },
+    "tsgo": {},
     "biome": {
       "settings": {
         "inline_config": {
@@ -169,13 +156,20 @@
   },
   "languages": {
     "TypeScript": {
-      "language_servers": ["tsgo", "biome", "!vtsls"],
-      "inlay_hints": {
-        "enabled": true,
-      },
+      "language_servers": [
+        "tsgo",
+        "biome",
+        "!vtsls",
+        "!typescript-language-server",
+      ],
     },
     "TSX": {
-      "language_servers": ["tsgo", "biome", "!vtsls"],
+      "language_servers": [
+        "tsgo",
+        "biome",
+        "!vtsls",
+        "!typescript-language-server",
+      ],
     },
     "Python": {
       "colorize_brackets": true,
@@ -196,6 +190,9 @@
   "toolbar": {
     "quick_actions": false,
   },
+  "inlay_hints": {
+    "enabled": true,
+  },
   "auto_install_extensions": {
     "git-firefly": true,
     "ruff": true,
@@ -203,6 +200,7 @@
     "pyrefly": true,
     "dockerfile": true,
     "bione": true,
+    "tsgo": true,
     "tombi": true,
   },
 }
