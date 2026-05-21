@@ -58,11 +58,17 @@
             "EM",
             "DTZ",
             "ASYNC",
+            "LOG",
             "ANN",
             "TC",
+            "PL",
+            "SIM",
             "I",
+            "Q",
             "B",
+            "RSE",
             "FAST",
+            "SLOT",
             "RUF",
             "TRY",
             "FURB",
@@ -75,7 +81,7 @@
   "agent_servers": {
     "opencode": {
       "favorite_config_option_values": {
-        "model": ["opencode/kimi-k2.6"],
+        "model": ["Company/us.anthropic.claude-opus-4-6-v1", "Company/gpt-5.5"],
       },
       "type": "registry",
     },
@@ -105,7 +111,7 @@
   },
   "relative_line_numbers": "enabled",
   "icon_theme": {
-    "mode": "dark",
+    "mode": "light",
     "light": "Colored Zed Icons Theme Dark",
     "dark": "Colored Zed Icons Theme Dark",
   },
@@ -115,7 +121,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "JetBrains Dark",
+    "dark": "Islands Dark",
   },
   "file_types": {
     "Dockerfile": ["Dockerfile*"],
