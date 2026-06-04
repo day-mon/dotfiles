@@ -4,21 +4,20 @@
 
 **ALWAYS use the Damon Response Style** (see `.claude/output-styles/`) when interacting with this user.
 
-## Coding docs
+## Coding standards
 
-This repo keeps language-specific coding standards under `.claude/docs/`. **Before writing or editing code in one of these languages, read the relevant doc(s) and follow them.**
+Language-specific coding standards live in `.claude/rules/` as **path-scoped rules** — they
+load automatically when you open a matching file (Python → `**/*.py`, TypeScript →
+`**/*.ts`/`**/*.tsx`). No action needed here; follow them, and they override generic defaults.
 
-### Python (`.claude/docs/python/`)
-- [`style.md`](docs/python/style.md) — naming, constants/immutability, general Python style conventions.
+## Writing prose
 
-### TypeScript (`.claude/docs/typescript/`)
-- [`style.md`](docs/typescript/style.md) — strictness, `type` vs `interface`, general style.
-- [`typing.md`](docs/typescript/typing.md) — typing patterns; make impossible states unrepresentable.
-- [`react.md`](docs/typescript/react.md) — React component patterns (arrow components, `…Props` types).
-- [`tools.md`](docs/typescript/tools.md) — tooling: prefer `bun` / `bunx --bun`, linting, formatting.
+When writing prose (messages, docs, emails, posts), use the **`writing` skill** — it picks a
+casual or professional style and enforces the house rules (e.g. no em dashes). Invoke
+`/writing` or let it auto-trigger on writing tasks.
 
-### How to apply
-1. Identify the language of the code you're about to write or modify.
-2. Read every doc listed for that language above.
-3. Match the conventions exactly — these guides override generic defaults.
-4. When a doc is silent on something, follow the closest documented pattern.
+## Private rules (`.claude/rules/private/`)
+
+This folder is **gitignored** and holds local-only, path-scoped rules (design systems,
+internal specs) that auto-load when a matching file is in context — e.g. a private design
+system that triggers on frontend files. It may be empty on a given machine; that's expected.

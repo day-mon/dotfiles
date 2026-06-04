@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.py"
+---
+
 # python style guide
 
 ## naming

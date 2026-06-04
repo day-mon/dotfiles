@@ -10,7 +10,6 @@
 import json
 import shutil
 from dataclasses import dataclass
-from pathlib import Path
 from urllib.parse import urlparse
 
 import trio
@@ -24,6 +23,7 @@ app = App(
 )
 console = Console()
 error_console = Console(stderr=True)
+CLAUDE_SYMLINK_DIRS = frozenset({"skills", "rules"})
 
 CONFIG_PATH = trio.Path(__file__).parent / trio.Path("setup.json")
 
@@ -67,7 +67,6 @@ async def symlink(src: trio.Path, dst: trio.Path) -> None:
         target_is_directory=await src.is_dir(),
     )
     console.print(f"✅ {dst} → {src}", style="green")
-
 
 
 async def setup_ssh(paths: Paths):
@@ -155,11 +154,6 @@ async def dotfiles_setup(paths: Paths):
                     entry,
                     paths.home_config / entry.name,
                 )
-
-
-# Entries under .claude/ that are symlinked instead of copied, so they stay
-# version-controlled and live-editable from the dotfiles checkout.
-CLAUDE_SYMLINK_DIRS = frozenset({"skills"})
 
 
 async def copy_claude_files(paths: Paths) -> None:
