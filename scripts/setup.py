@@ -157,8 +157,16 @@ async def dotfiles_setup(paths: Paths):
                 )
 
 
+# Entries under .claude/ that are symlinked instead of copied, so they stay
+# version-controlled and live-editable from the dotfiles checkout.
+CLAUDE_SYMLINK_DIRS = frozenset({"skills"})
+
+
 async def copy_claude_files(paths: Paths) -> None:
-    """Copy .claude/ contents from dotfiles to ~/.claude/."""
+    """Copy .claude/ contents from dotfiles to ~/.claude/.
+
+    Entries named in ``CLAUDE_SYMLINK_DIRS`` are symlinked rather than copied.
+    """
     src_claude = paths.dotfiles / ".claude"
     dst_claude = paths.home / ".claude"
 
@@ -170,6 +178,16 @@ async def copy_claude_files(paths: Paths) -> None:
 
     for entry in await src_claude.iterdir():
         dst_entry = dst_claude / entry.name
+
+        if entry.name in CLAUDE_SYMLINK_DIRS:
+            if await dst_entry.is_symlink():
+                await dst_entry.unlink()
+            elif await dst_entry.exists():
+                await trio.to_thread.run_sync(shutil.rmtree, dst_entry)
+            await dst_entry.symlink_to(target=entry, target_is_directory=True)
+            console.print(f"🔗 linked {entry.name}/ → ~/.claude/", style="green")
+            continue
+
         if await entry.is_dir():
             if await dst_entry.exists():
                 await trio.to_thread.run_sync(shutil.rmtree, dst_entry)

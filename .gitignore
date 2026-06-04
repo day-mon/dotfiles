@@ -8,3 +8,4 @@ secrets
 .confg/zed/prompts/**
 *DS_Store*
 *.config/opencode/dcp.jsonc*
+**/__pycache__/**

@@ -1,6 +1,5 @@
 {
   "cli_default_open_behavior": "existing_window",
-  "code_lens": "on",
   "outline_panel": {
     "dock": "right",
   },
@@ -108,7 +107,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "Islands Dark",
+    "dark": "Ayu Dark",
   },
   "file_types": {
     "Dockerfile": ["Dockerfile*"],

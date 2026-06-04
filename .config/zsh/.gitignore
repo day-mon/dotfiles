@@ -1,3 +1,4 @@
 plugins/
 themes/
 .zshenv
+.zsh_sessions

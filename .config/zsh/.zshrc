@@ -22,8 +22,9 @@ zsh_add_plugin "hlissner/zsh-autopair"
 zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 zsh_add_plugin "mafredri/zsh-async"
 zsh_add_plugin "romkatv/zsh-defer"
-eval "$(starship init zsh)"
-eval "$(direnv hook zsh)"
+(( $+commands[starship] )) && eval "$(starship init zsh)"
+(( $+commands[direnv] )) && eval "$(direnv hook zsh)"
+(( $+commands[mise] )) && eval "$(/Users/dmontague/.local/bin/mise activate zsh)" # added by https://mise.run/zsh
 
 
 # Colors
@@ -41,6 +42,3 @@ fi
 if [[ $1 == "--debug" ]]; then
     zprof
 fi
-
-# bun completions
-[ -s "/Users/damon/.bun/_bun" ] && source "/Users/damon/.bun/_bun"
