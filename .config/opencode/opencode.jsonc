@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["docs/**/*.md"],
+  "instructions": ["../.claude/.rules/**/*.md"],
   "agent": {
     "general": {
       "prompt": "{file:./prompts/damon.md}",
@@ -11,7 +11,7 @@
       "temperature": 0,
     },
     "plan": {
-      "prompt": "{file:./prompts/damon.md}",
+      "prompt": "{file:./prompts/plan.md}",
       "temperature": 0,
     },
   },
@@ -97,6 +97,11 @@
       "type": "remote",
       "enabled": true,
       "url": "https://mcp.grep.app",
+    },
+    "robinhood": {
+      "enabled": true,
+      "type": "remote",
+      "url": "https://agent.robinhood.com/mcp/trading",
     },
   },
   "provider": {

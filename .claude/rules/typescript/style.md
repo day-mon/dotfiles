@@ -2,6 +2,7 @@
 paths:
   - "**/*.ts"
   - "**/*.tsx"
+  - "package.json"
 ---
 
 # typescript style guide

@@ -63,6 +63,14 @@
         },
       },
     },
+    "rust-analyzer": {
+      "enable_lsp_tasks": true,
+      "initialization_options": {
+        "check": {
+          "command": "clippy",
+        },
+      },
+    },
   },
   "agent_servers": {
     "pi-acp": {
@@ -110,7 +118,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "Ayu Dark",
+    "dark": "JetBrains Islands Dark",
   },
   "file_types": {
     "Dockerfile": ["Dockerfile*"],
@@ -157,6 +165,10 @@
     "metrics": false,
   },
   "languages": {
+    "Rust": {
+      "language_servers": ["rust-analyzer"],
+      "colorize_brackets": true,
+    },
     "TypeScript": {
       "language_servers": [
         "tsgo",

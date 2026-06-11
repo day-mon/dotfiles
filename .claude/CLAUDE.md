@@ -21,3 +21,7 @@ casual or professional style and enforces the house rules (e.g. no em dashes). I
 This folder is **gitignored** and holds local-only, path-scoped rules (design systems,
 internal specs) that auto-load when a matching file is in context — e.g. a private design
 system that triggers on frontend files. It may be empty on a given machine; that's expected.
+
+## Worktree rules
+
+All new worktrees should be created in the projects working dir and be put in .worktrees
