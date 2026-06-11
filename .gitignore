@@ -9,3 +9,5 @@ secrets
 *DS_Store*
 *.config/opencode/dcp.jsonc*
 **/__pycache__/**
+.claude/skills/app-hosting-advisor/
+.pi/extensions/wandb-provider.ts

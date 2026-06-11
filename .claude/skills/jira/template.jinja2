@@ -1,0 +1,36 @@
+## Description
+
+{{ description | default("TODO: Write 1 to 3 short sentences describing the problem, intended outcome, and scope boundary.") }}
+
+{% if technical_context is defined and technical_context %}
+## Technical Context
+
+{% for item in technical_context %}
+- {{ item }}
+{% endfor %}
+
+{% endif %}
+## Entrance Criteria
+
+{% if entrance_criteria is defined and entrance_criteria %}
+{% for item in entrance_criteria %}
+- {{ item }}
+{% endfor %}
+{% else %}
+- None identified.
+{% endif %}
+
+## Acceptance Criteria
+
+Render this section as a Jira action-item list (ADF `taskList` / `taskItem` nodes) so each criterion is a checkable action item, not a plain bullet. The checkbox itself marks a must-complete item, so no emoji is needed for those. Prefix only the special cases: `:x:` for explicitly out-of-scope work and `:question_mark:` for an unresolved question.
+
+{% if acceptance_criteria is defined and acceptance_criteria %}
+{% for item in acceptance_criteria %}
+- [ ] {{ item }}
+{% endfor %}
+{% else %}
+- [ ] TODO: Add a concrete, testable completion requirement.
+- [ ] TODO: Add required test coverage or validation behavior.
+- [ ] :x: TODO: Add any explicitly canceled or out-of-scope work, if applicable.
+- [ ] :question_mark: TODO: Add any unresolved question that must be answered before completion, if applicable.
+{% endif %}

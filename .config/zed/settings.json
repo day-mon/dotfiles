@@ -65,6 +65,9 @@
     },
   },
   "agent_servers": {
+    "pi-acp": {
+      "type": "registry"
+    },
     "opencode": {
       "favorite_config_option_values": {
         "model": ["Company/us.anthropic.claude-opus-4-6-v1", "Company/gpt-5.5"],

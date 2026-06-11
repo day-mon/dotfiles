@@ -36,6 +36,8 @@ class Paths:
     home_config: trio.Path
     zshrc: trio.Path
     zshenv: trio.Path
+    pi_agent: trio.Path
+    agents: trio.Path
 
 
 async def get_paths() -> Paths:
@@ -47,6 +49,8 @@ async def get_paths() -> Paths:
         home_config=home / ".config",
         zshrc=home / ".zshrc",
         zshenv=home / ".zshenv",
+        pi_agent=home / ".pi" / "agent",
+        agents=home / ".agents",
     )
 
 
@@ -141,6 +145,7 @@ async def dotfiles_setup(paths: Paths):
         await paths.home_config.mkdir(parents=True, exist_ok=True)
 
     await copy_claude_files(paths)
+    await pi_setup(paths)
 
     async with trio.open_nursery() as nursery:
         nursery.start_soon(symlink, zsh_dir / ".zshrc", paths.zshrc)
@@ -190,6 +195,44 @@ async def copy_claude_files(paths: Paths) -> None:
         elif await entry.is_file():
             await trio.to_thread.run_sync(shutil.copy2, entry, dst_entry)
             console.print(f"📄 copied {entry.name} → ~/.claude/", style="green")
+
+
+async def pi_setup(paths: Paths) -> None:
+    """Wire the pi coding agent to the dotfiles single source of truth.
+
+    pi reuses the same instruction/style/skill files as Claude via symlinks,
+    so nothing is duplicated:
+      ~/.pi/agent/AGENTS.md         -> .claude/CLAUDE.md
+      ~/.pi/agent/APPEND_SYSTEM.md  -> .claude/output-styles/damon.md
+      ~/.agents/skills             -> .claude/skills        (pi auto-loads this)
+      ~/.pi/agent/extensions       -> .pi/extensions         (pi auto-loads this)
+    """
+    claude = paths.dotfiles / ".claude"
+    pi_src = paths.dotfiles / ".pi"
+    if not await claude.exists():
+        return
+
+    await paths.pi_agent.mkdir(parents=True, exist_ok=True)
+    await paths.agents.mkdir(parents=True, exist_ok=True)
+
+    async def relink(src: trio.Path, dst: trio.Path) -> None:
+        if await dst.is_symlink():
+            await dst.unlink()
+        elif await dst.exists():
+            if await dst.is_dir():
+                await trio.to_thread.run_sync(shutil.rmtree, dst)
+            else:
+                await dst.unlink()
+        await dst.symlink_to(target=src, target_is_directory=await src.is_dir())
+        console.print(f"\U0001f517 linked {dst} \u2192 {src}", style="green")
+
+    await relink(claude / "CLAUDE.md", paths.pi_agent / "AGENTS.md")
+    await relink(
+        claude / "output-styles" / "damon.md", paths.pi_agent / "APPEND_SYSTEM.md"
+    )
+    await relink(claude / "skills", paths.agents / "skills")
+    if await (pi_src / "extensions").exists():
+        await relink(pi_src / "extensions", paths.pi_agent / "extensions")
 
 
 async def brew_bundle(paths: Paths):
