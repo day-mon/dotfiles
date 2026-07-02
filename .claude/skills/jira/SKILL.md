@@ -7,6 +7,8 @@ argument-hint: [ticket goal or rough notes]
 
 Use this skill when the user asks for a Jira ticket, story, task, bug, epic work item, or acceptance criteria.
 
+> **Always create or edit tickets in ADF format.** When writing to Jira via the Atlassian MCP, pass `contentFormat: adf` and build the body as an ADF document (never plain Markdown). This is what makes smart links, @mentions, emoji markers, and the checkable Acceptance Criteria task list render correctly. See the Workflow section for the required node types.
+
 ## Goal
 
 Write tickets that are specific enough for an engineer to pick up without another meeting.
@@ -102,7 +104,7 @@ Avoid:
 3. Keep language direct and scannable.
 4. Do not use em dashes.
 5. If you make assumptions, put them in Technical Context or Acceptance Criteria as `:question_mark:` items.
-6. When creating/editing via the Atlassian MCP, write the body as ADF (`contentFormat: adf`) so rich nodes render:
+6. When creating/editing via the Atlassian MCP, always write the body as ADF (`contentFormat: adf`) so rich nodes render:
    - Hot-link referenced issues and URLs as smart links (`inlineCard` nodes), never paste raw URLs.
    - @mention people with real `mention` nodes (look up the accountId), never plain `@Name` text.
    - Render the `:info:` / `:x:` / `:question_mark:` markers as `emoji` nodes.

@@ -98,11 +98,6 @@
       "enabled": true,
       "url": "https://mcp.grep.app",
     },
-    "robinhood": {
-      "enabled": true,
-      "type": "remote",
-      "url": "https://agent.robinhood.com/mcp/trading",
-    },
   },
   "provider": {
     "Company": {
@@ -176,5 +171,5 @@
       },
     },
   },
-  "plugin": ["opencode-notify", "@tarquinen/opencode-dcp@latest"],
+  "plugin": ["opencode-notify"],
 }

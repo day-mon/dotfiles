@@ -1,4 +1,7 @@
 {
+  "session": {
+    "trust_all_worktrees": true
+  },
   "cli_default_open_behavior": "existing_window",
   "outline_panel": {
     "dock": "right",
@@ -83,6 +86,11 @@
       "type": "registry",
     },
     "claude-acp": {
+      "default_config_options": {
+        "model": "claude-opus-4-8",
+        "effort": "max",
+        "mode": "bypassPermissions"
+      },
       "type": "registry",
     },
   },
@@ -118,7 +126,7 @@
   "theme": {
     "mode": "dark",
     "light": "Ayu Light",
-    "dark": "JetBrains Islands Dark",
+    "dark": "Ayu Dark",
   },
   "file_types": {
     "Dockerfile": ["Dockerfile*"],

@@ -42,3 +42,6 @@ fi
 if [[ $1 == "--debug" ]]; then
     zprof
 fi
+
+# sentry
+fpath=("/Users/dmontague/.local/share/zsh/site-functions" $fpath)
