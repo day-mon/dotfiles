@@ -42,10 +42,14 @@ class Paths:
 
 async def get_paths() -> Paths:
     home = await trio.Path("~").expanduser()
+    # The checkout this script ships in is the single source of truth —
+    # the repo lives at ~/.important/dotfiles on macOS but at
+    # ~/.config/coderv2/dotfiles under Coder, so resolve from __file__.
+    dotfiles = trio.Path(__file__).parent.parent
     return Paths(
         home=home,
         ssh=home / ".ssh",
-        dotfiles=home / ".important" / "dotfiles",
+        dotfiles=dotfiles,
         home_config=home / ".config",
         zshrc=home / ".zshrc",
         zshenv=home / ".zshenv",
@@ -56,6 +60,17 @@ async def get_paths() -> Paths:
 
 async def run(cmd: list[str], *, check: bool = True):
     return await trio.run_process(cmd, check=check)
+
+
+async def _ssh_agent_available() -> bool:
+    """True when an ssh-agent is running with at least one loaded key.
+
+    The dotfiles origin is rewritten https -> ssh only when an agent exists;
+    on headless containers (Coder) there is none, so origin stays https and
+    remains cloneable without credentials.
+    """
+    result = await run(["ssh-add", "-l"], check=False)
+    return result.returncode == 0
 
 
 async def symlink(src: trio.Path, dst: trio.Path) -> None:
@@ -127,7 +142,7 @@ async def dotfiles_setup(paths: Paths):
         return
 
     remote_url = origin.stdout.decode().strip()
-    if urlparse(remote_url).scheme != "git":
+    if urlparse(remote_url).scheme != "git" and await _ssh_agent_available():
         ssh_url = remote_url.replace("https://", "git@", 1).replace(".com/", ".com:", 1)
         await run(["git", "remote", "set-url", "origin", ssh_url])
 
