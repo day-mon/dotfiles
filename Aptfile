@@ -1,0 +1,26 @@
+# core tools: mirror of the Brewfile, mapped to apt package names
+bat
+eza
+git-delta
+fzf
+ripgrep
+fd-find
+tldr
+btop
+jq
+git
+gh
+neovim
+zsh
+starship
+zoxide
+thefuck
+topgrade
+curl
+watch
+golang-go
+
+# not in the Brewfile set:
+#   docker   -> already provided by the Coder workspace host (docker group)
+#   uv       -> installed by bootstrap.sh, then managed per-project via uv tool
+#   raycast, stats, zed -> macOS-only casks, no apt equivalent

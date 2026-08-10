@@ -246,6 +246,34 @@ async def brew_bundle(paths: Paths):
     await run(["brew", "bundle", "--file", str(brewfile)])
 
 
+async def apt_bundle():
+    """Run apt-get against the project Aptfile (Linux)."""
+    if not await trio.to_thread.run_sync(shutil.which, "apt-get"):
+        return
+    aptfile = trio.Path(__file__).parent.parent / "Aptfile"
+    if not await aptfile.exists():
+        error_console.print("⚠️ Aptfile not found")
+        return
+    packages = [
+        line.strip()
+        for line in (await aptfile.read_text()).splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if not packages:
+        return
+
+    sudo = ["sudo", "-n"] if await trio.to_thread.run_sync(shutil.which, "sudo") else []
+    await run(sudo + ["apt-get", "update", "-qq"], check=False)
+    result = await run(
+        sudo + ["apt-get", "install", "-y", "-qq"] + packages,
+        check=False,
+    )
+    if result.returncode != 0:
+        error_console.print(
+            "⚠️ apt install reported errors (a package may be unavailable in this distro)"
+        )
+
+
 async def uninstall_packages(packages: list[str]):
     """Uninstall the given brew packages."""
     if packages:
@@ -295,6 +323,9 @@ async def main(
 
     if installs or complete:
         await brew_bundle(paths)
+
+    if installs or complete:
+        await apt_bundle()
 
     if installs or complete:
         await custom_installs(config.get("custom_installs", {}))
