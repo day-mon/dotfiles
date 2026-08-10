@@ -12,14 +12,15 @@ git
 gh
 neovim
 zsh
-starship
 zoxide
 thefuck
-topgrade
 curl
 watch
 golang-go
 
+# not in the Ubuntu noble archive (checked packages.ubuntu.com/noble):
+#   starship -> custom_installs (official installer; only in newer Ubuntu suites)
+#   topgrade -> custom_installs (cargo install; not in Ubuntu archive)
 # not in the Brewfile set:
 #   docker   -> already provided by the Coder workspace host (docker group)
 #   uv       -> installed by bootstrap.sh, then managed per-project via uv tool

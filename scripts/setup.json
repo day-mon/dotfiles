@@ -79,6 +79,8 @@
   ],
   "uninstall_packages": [],
   "custom_installs": {
-    "cargo": "curl https://sh.rustup.rs -sSf | sh"
+    "cargo": "curl -fsSL https://sh.rustup.rs | sh -s -- -y",
+    "starship": "curl -fsSL https://starship.rs/install.sh | sh",
+    "topgrade": "export PATH=\"$HOME/.cargo/bin:$PATH\"; cargo install topgrade --locked"
   }
 }
