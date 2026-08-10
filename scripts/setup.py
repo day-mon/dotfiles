@@ -8,6 +8,7 @@
 # ///
 
 import json
+import platform
 import shutil
 from dataclasses import dataclass
 from urllib.parse import urlparse
@@ -112,9 +113,9 @@ async def setup_ssh(paths: Paths):
         )
 
     ssh_config_path = paths.ssh / "config"
+    use_keychain = "    UseKeychain yes\n" if platform.system() == "Darwin" else ""
     config_block = f"""Host *
-    UseKeychain yes
-    AddKeysToAgent yes
+{use_keychain}    AddKeysToAgent yes
     IdentityFile {key_path}
 """
 
