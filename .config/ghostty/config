@@ -1,11 +1,10 @@
 shell-integration = zsh
-font-family = "Geist Mono"
-theme = vesper
-title = Ghostty
+font-family = "GeistMono Nerd Font Mono"
+theme = Zenbones Dark
 window-vsync = true
 window-padding-x = 15,15
 window-padding-y = 15,15
 font-size = 18
 font-feature = -liga
 font-thicken = true
-term = xterm
+term = xterm-ghostty

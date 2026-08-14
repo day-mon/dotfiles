@@ -26,6 +26,8 @@ zsh_add_plugin "romkatv/zsh-defer"
 (( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 (( $+commands[mise] )) && eval "$(/Users/dmontague/.local/bin/mise activate zsh)" # added by https://mise.run/zsh
 
+zsh_add_file "ghostty.zsh"
+
 
 # Colors
 autoload -Uz colors && colors

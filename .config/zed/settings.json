@@ -14,7 +14,7 @@
     "dock": "right",
   },
   "lsp": {
-    "tsgo": {},
+    "typescript-ls": {},
     "biome": {
       "settings": {
         "inline_config": {
@@ -107,7 +107,7 @@
   "project_panel": {
     "dock": "right",
     "bold_folder_labels": true,
-    "hide_gitignore": true,
+    "hide_gitignore": false,
   },
   "autosave": {
     "after_delay": {
@@ -179,7 +179,7 @@
     },
     "TypeScript": {
       "language_servers": [
-        "tsgo",
+        "typescript-ls",
         "biome",
         "!vtsls",
         "!typescript-language-server",
@@ -187,7 +187,7 @@
     },
     "TSX": {
       "language_servers": [
-        "tsgo",
+        "typescript-ls",
         "biome",
         "!vtsls",
         "!typescript-language-server",
