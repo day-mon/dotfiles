@@ -1,111 +1,190 @@
 ---
-description: Use when drafting or improving Jira tickets. Produces clear tickets with Description, Technical Context, Entrance Criteria, and Acceptance Criteria sections, using the bundled template.jinja2.
-argument-hint: [ticket goal or rough notes]
+name: jira
+description: Manage CoreWeave Jira through the authenticated Stargate Atlassian MCP, and draft clear Jira tickets. Use for viewing, searching, creating, editing, assigning, transitioning, commenting on, linking, worklogging, or summarizing Jira issues; daily Jira rundowns; and writing stories, tasks, bugs, epics, or acceptance criteria. Use the small local fallback only for board/sprint administration or attachment replacement, which the MCP does not expose.
+argument-hint: [ticket goal, issue key, JQL, or rough notes]
 ---
 
-# Jira ticket writing
+# Jira through Stargate
 
-Use this skill when the user asks for a Jira ticket, story, task, bug, epic work item, or acceptance criteria.
+Use the `mcp` gateway with `server: "stargate-atlassian"` for Jira work. Do not use `acli` for normal issue operations.
 
-> **Always create or edit tickets in ADF format.** When writing to Jira via the Atlassian MCP, pass `contentFormat: adf` and build the body as an ADF document (never plain Markdown). This is what makes smart links, @mentions, emoji markers, and the checkable Acceptance Criteria task list render correctly. See the Workflow section for the required node types.
+CoreWeave defaults:
 
-## Goal
+- Site / `cloudId`: `https://coreweave.atlassian.net`
+- Issue URL: `https://coreweave.atlassian.net/browse/<KEY>`
+- MCP server: `stargate-atlassian`
 
-Write tickets that are specific enough for an engineer to pick up without another meeting.
+## Safety
 
-A good ticket should answer:
-- **What are we changing?**
-- **Why does it matter?**
-- **Where should the implementer look?**
-- **What must be true before work starts?**
-- **How do we know it is done?**
+- Run read-only searches and views directly.
+- Before a mutation, state the exact issue keys and intended change.
+- If the user explicitly requested that exact single-issue change, proceed.
+- Ask for confirmation before bulk changes, deletion, archival, attachment deletion/replacement, or a JQL-based mutation.
+- Never invent issue keys, project keys, account IDs, field IDs, transition IDs, sprint IDs, or links.
+- After a write, verify the affected issue with `getJiraIssue` and report its key and link.
+
+## MCP workflow
+
+1. Discover a tool with `mcp` search when needed.
+2. Inspect its schema with `mcp` describe before unfamiliar or write operations.
+3. Call it through `mcp` with `server: "stargate-atlassian"`; `args` must be a JSON string.
+4. Prefer `responseContentFormat: "markdown"` for reads and `contentFormat: "adf"` for rich writes.
+
+Common Jira tools:
+
+| Goal | Tool |
+|---|---|
+| Read an issue, including comments or custom fields | `getJiraIssue` |
+| Search issues | `searchJiraIssuesUsingJql` |
+| Create an issue | `createJiraIssue` |
+| Edit fields, assign, set parent/sprint/labels/priority | `editJiraIssue` |
+| Find users and account IDs | `lookupJiraAccountId` |
+| List projects | `getVisibleJiraProjects` |
+| Inspect issue types and fields | `getJiraProjectIssueTypesMetadata`, `getJiraIssueTypeMetaWithFields` |
+| Read/add/update comments | `getJiraIssue` with `comment`, `addCommentToJiraIssue` |
+| Read/apply transitions | `getTransitionsForJiraIssue`, `transitionJiraIssue` |
+| Read/create issue links | `getIssueLinkTypes`, `createIssueLink`, `getJiraIssueRemoteIssueLinks` |
+| Add/update worklogs | `addWorklogToJiraIssue` |
+
+### Read an issue
+
+Call `getJiraIssue` with the site URL as `cloudId`, the issue key, and only the fields needed. Include `comment` to retrieve comments. Use `fields: ["*all"]` only when custom-field discovery is necessary because it produces a large response.
+
+### Search with JQL
+
+Use `searchJiraIssuesUsingJql` with targeted fields and `maxResults <= 100`. Follow `nextPageToken` when complete pagination matters. Keep read-only daily/report searches separate rather than building one oversized query.
+
+### Create or edit
+
+- Resolve the project, issue type, user account ID, transition ID, parent, story-points field ID, sprint field ID, and other custom-field IDs before writing.
+- Before creating any ticket, require both a story-point estimate and a destination: a named sprint or the backlog. If either is missing, ask the user one concise question that requests both missing choices. Do not create the ticket until they answer.
+- Use whole-number story-point estimates from `1` through `8`. Each point represents half a working day: `1` = 0.5 day, `2` = 1 day, `3` = 1.5 days, through `8` = 4 days. If the work appears larger than `8`, recommend splitting it instead of assigning a larger estimate.
+- Always set story points during ticket creation. If the selected issue type does not expose a story-points field, stop and explain the field/configuration problem rather than silently creating an unestimated ticket.
+- For a named sprint, resolve the real sprint ID before writing and set it during creation. For the backlog, leave the sprint field unset; do not pass `null` unless clearing an existing sprint was explicitly requested.
+- `createJiraIssue.additional_fields` is the only place to set priority, labels, components, sprint/custom fields, and similar fields during creation.
+- `editJiraIssue.fields` can set standard or `customfield_*` fields, including assignee, parent, sprint, labels, priority, and story points.
+- Pass an explicit `null` only when the user intends to clear a field.
+- Use `lookupJiraAccountId`; never guess an assignee ID.
+
+### Transition
+
+Call `getTransitionsForJiraIssue`, select the transition whose target status matches the request, then call `transitionJiraIssue` with that transition ID. Do not guess IDs from another project or workflow.
+
+## Daily rundown
+
+For `${window}` style requests such as `-1d` or `-2w`, run these read-only JQL searches through `searchJiraIssuesUsingJql`:
+
+1. Open work:
+   `assignee = currentUser() AND statusCategory != Done ORDER BY priority DESC, updated DESC`
+2. Recently updated:
+   `assignee = currentUser() AND updated >= startOfDay(<window>) ORDER BY updated DESC`
+3. Recently completed:
+   `assignee = currentUser() AND statusCategory = Done AND statusCategoryChangedDate >= startOfDay(<window>) ORDER BY updated DESC`
+
+Request `summary`, `status`, `priority`, `issuetype`, `assignee`, `parent`, and `updated`. Inspect individual issues only when needed to explain a blocker, high-priority item, or meaningful status change. Do not modify Jira during a rundown.
+
+Format:
+
+- `# Daily rundown`
+- `## Needs attention` for blocked/high-priority items; omit when empty
+- `## In progress`, grouped by initiative when useful
+- `## Recent movement`
+- `## Suggested focus`, at most three clearly labeled suggestions
+
+Link every mentioned issue.
+
+# Ticket writing
+
+Use this section when drafting, creating, or improving Jira tickets.
 
 ## Required sections
 
-Use these sections, in this order:
+Use these sections, in order:
 
 1. `Description`
-2. `Technical Context` (optional - include only when there is real technical guidance to give; omit the section entirely otherwise)
+2. `Technical Context` (only when real technical guidance exists)
 3. `Entrance Criteria`
 4. `Acceptance Criteria`
 
 Use `template.jinja2` from this skill directory as the output shape.
 
-## Description
+### Description
 
-Write 1 to 3 short sentences.
+Write 1 to 3 short sentences covering the user or business problem, intended outcome, and important scope boundary. Keep implementation details in Technical Context.
 
-Include:
-- The user-facing or business problem.
-- The intended outcome.
-- Any important scope boundary.
+### Technical Context
 
-Avoid:
-- Implementation detail that belongs in Technical Context.
-- Vague phrases like “make it better” or “clean this up” without specifics.
+Include practical bullets when known: repos, files, services, APIs, flags, dashboards, implementation constraints, risks, compatibility concerns, migration notes, or testing guidance. State uncertain decisions as open questions.
 
-## Technical Context
+### Entrance Criteria
 
-Optional. Include this section only when there is real technical guidance to give. If the ticket has no meaningful technical context, omit the section entirely rather than padding it with filler.
+List blocking tickets, decisions, approvals, designs, contracts, credentials, environments, or test data. Link real tickets as `<KEY>: <title> - https://coreweave.atlassian.net/browse/<KEY>`. If none exist, write `None identified.`
 
-When included, write a few bullets with practical implementation guidance.
+### Acceptance Criteria
 
-Include when known:
-- Relevant repos, files, services, components, APIs, feature flags, or dashboards.
-- Expected implementation approach.
-- Constraints, risks, compatibility concerns, data model notes, or migration notes.
-- Testing guidance.
+Write independently verifiable outcomes. Use checkable ADF action items. Prefix only special cases:
 
-Keep this as guidance, not a full design doc. If a technical decision is uncertain, call it out as an open question instead of pretending it is settled.
+- `:x:` for explicitly canceled or out-of-scope work
+- `:question_mark:` for unresolved questions required before completion
 
-## Entrance Criteria
+Avoid vague criteria such as “works as expected” or “update tests.”
 
-Use this section for prerequisites before the ticket can start.
+## Completing a story
 
-Include:
-- Blocking Jira tickets.
-- Required decisions or approvals.
-- Required designs, specs, API contracts, migrations, or dependencies.
-- Required access, credentials, environments, or test data.
+Before transitioning a story to Done:
 
-When specific tickets exist, include the key and a link:
-- `PROJ-123: Short title - https://company.atlassian.net/browse/PROJ-123`
+1. Verify every Acceptance Criteria item against the delivered work.
+2. Mark every satisfied Acceptance Criteria task item as checked in the ticket description. Do not check an item that was not completed; instead, leave it unchecked and explain the gap or move it out of scope explicitly.
+3. Add a completion update describing what was done, how it was implemented, and any relevant links, such as pull requests, commits, documentation, dashboards, test results, or follow-up tickets. Use only verified links.
+4. Re-read the issue after the edits and confirm that all Acceptance Criteria boxes are checked before transitioning it to Done. If any box remains unchecked, stop and ask how the remaining scope should be handled.
 
-If none exist, write:
-- `None identified.`
+Write the completion update as a concise ADF comment with headings or bold labels for `What was done`, `How it was done`, and `Relevant links`.
 
-Do not invent ticket keys or links. If the user mentions dependencies without ticket IDs, list them as unlinked prerequisites.
+## ADF requirement
 
-## Acceptance Criteria
+**Always create or edit ticket descriptions and rich comments in ADF.** Pass `contentFormat: "adf"` and provide an ADF document, not Markdown pretending to be rich text.
 
-Write concrete, testable bullets.
+Before constructing or debugging ADF, read `references/adf.md`. Required conventions:
 
-Render each criterion as a checkable action item (see Workflow note). The checkbox itself means "must be completed," so no emoji marker is needed for normal criteria. Prefix only the special cases:
-- `:x:` for work that is explicitly canceled or out of scope.
-- `:question_mark:` for unresolved questions that must be answered before completion.
+- section headings: `heading` nodes
+- prose: `paragraph` nodes
+- context/prerequisites: `bulletList` nodes
+- Acceptance Criteria: `taskList` with `taskItem` children and fresh unique `localId` values
+- Jira links and standalone URLs: `inlineCard` nodes
+- people: real `mention` nodes after resolving account IDs
+- special markers: `emoji` nodes
 
-Each criterion should be independently verifiable.
+Do not use em dashes.
 
-Good examples:
-- `The API returns HTTP 400 with a clear validation error when the request is missing an email.`
-- `Unit tests cover successful creation, duplicate input, and missing required fields.`
-- `:x: Backfilling historical records is not included in this ticket.`
-- `:question_mark: Confirm whether admins should bypass the new validation rule.`
+# Fallbacks not available through MCP
 
-Avoid:
-- “Works as expected.”
-- “Update tests.” without naming what behavior is tested.
-- Combining multiple unrelated outcomes into one bullet.
+## Board and sprint administration
 
-## Workflow
+The Atlassian MCP can set a known sprint custom field, but it cannot list or administer boards/sprints. Use read-only `acli jira board` commands only when a board or active sprint ID must be discovered. Use `acli jira sprint` for explicit sprint administration requests.
 
-1. Gather missing context from the user if the ticket would otherwise be misleading.
-2. Draft the Jira ticket using `template.jinja2`.
-3. Keep language direct and scannable.
-4. Do not use em dashes.
-5. If you make assumptions, put them in Technical Context or Acceptance Criteria as `:question_mark:` items.
-6. When creating/editing via the Atlassian MCP, always write the body as ADF (`contentFormat: adf`) so rich nodes render:
-   - Hot-link referenced issues and URLs as smart links (`inlineCard` nodes), never paste raw URLs.
-   - @mention people with real `mention` nodes (look up the accountId), never plain `@Name` text.
-   - Render the `:info:` / `:x:` / `:question_mark:` markers as `emoji` nodes.
-   - Render the Acceptance Criteria as a Jira action-item list (`taskList` with `taskItem` children, each needing a unique `localId` and `state` of `TODO`/`DONE`) so each criterion is a checkable action item. Keep the emoji marker at the start of each item.
+Examples:
+
+```bash
+acli jira board search --project IISA --json
+acli jira board list-sprints --id <board-id> --state active --json
+```
+
+Apply the discovered sprint to an issue through `editJiraIssue`, not through `acli`, unless the MCP cannot represent the required operation.
+
+## Replace attachments
+
+The MCP does not expose Jira attachment upload/delete. Use the bundled dry-run-first helper:
+
+```bash
+uv run ~/.claude/skills/jira/scripts/replace-attachments.py \
+  --issue IISA-123 path/to/report.xlsx
+
+uv run ~/.claude/skills/jira/scripts/replace-attachments.py \
+  --issue IISA-123 --apply path/to/report.xlsx
+```
+
+The helper loads `JIRA_SITE`, `ATLASSIAN_EMAIL`, and `ATLASSIAN_API_TOKEN` from `.env.local`, uploads all replacements first, then deletes old same-named attachment IDs. Before `--apply`, report the exact issue, filenames, and attachment IDs from the dry run and obtain explicit confirmation.
+
+## Remaining gaps
+
+The MCP does not provide issue deletion, attachment management, watcher management, worklog deletion, or full board/sprint administration. Explain the gap instead of inventing a tool or undocumented argument.

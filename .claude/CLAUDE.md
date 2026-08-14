@@ -10,6 +10,12 @@ Language-specific coding standards live in `.claude/rules/` as **path-scoped rul
 load automatically when you open a matching file (Python → `**/*.py`, TypeScript →
 `**/*.ts`/`**/*.tsx`). No action needed here; follow them, and they override generic defaults.
 
+## Python scripts
+
+Use `uv` for ad hoc Python scripts and dependency-backed one-offs. Prefer
+`uv run --with <package> python ...` (or a PEP 723 script run with `uv run`) instead of
+invoking `python3` or `pip` directly.
+
 ## Writing prose
 
 When writing prose (messages, docs, emails, posts), use the **`writing` skill** — it picks a
