@@ -221,7 +221,11 @@ async def pi_setup(paths: Paths) -> None:
       ~/.pi/agent/AGENTS.md         -> .claude/CLAUDE.md
       ~/.pi/agent/APPEND_SYSTEM.md  -> .claude/output-styles/damon.md
       ~/.agents/skills             -> .claude/skills        (pi auto-loads this)
-      ~/.pi/agent/extensions       -> .pi/extensions         (pi auto-loads this)
+
+    Portable config under .pi/agent/ (prompts, scripts, skills, themes)
+    is symlinked from the repo. Machine-local gitignored files (settings.json,
+    models.json, mcp.json, configs/) are symlinked only when present in the
+    repo; on a fresh clone settings.json is seeded from settings.json.example.
     """
     claude = paths.dotfiles / ".claude"
     pi_src = paths.dotfiles / ".pi"
@@ -247,8 +251,34 @@ async def pi_setup(paths: Paths) -> None:
         claude / "output-styles" / "damon.md", paths.pi_agent / "APPEND_SYSTEM.md"
     )
     await relink(claude / "skills", paths.agents / "skills")
-    if await (pi_src / "extensions").exists():
-        await relink(pi_src / "extensions", paths.pi_agent / "extensions")
+
+    # Portable pi config — always symlinked from the repo (tracked).
+    pi_agent_src = pi_src / "agent"
+    for name in ("prompts", "scripts", "skills", "themes"):
+        src = pi_agent_src / name
+        if await src.exists():
+            await relink(src, paths.pi_agent / name)
+
+    # Machine-local config — symlinked only when already in the repo
+    # (gitignored, e.g. on this machine). Absent on a fresh clone.
+    for name in ("settings.json", "models.json", "mcp.json", "configs"):
+        src = pi_agent_src / name
+        if await src.exists():
+            await relink(src, paths.pi_agent / name)
+
+    # Seed settings.json from the example on a fresh clone (the real one is
+    # gitignored and machine-local, so it is not in the repo).
+    settings = paths.pi_agent / "settings.json"
+    if not await settings.exists():
+        example = pi_agent_src / "settings.json.example"
+        if await example.exists():
+            if await settings.is_symlink():
+                await settings.unlink()  # stale broken symlink
+            await trio.to_thread.run_sync(shutil.copy2, example, settings)
+            console.print(
+                f"\U0001f4c4 seeded {settings} from settings.json.example",
+                style="green",
+            )
 
 
 async def brew_bundle(paths: Paths):

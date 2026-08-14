@@ -1,0 +1,19 @@
+{
+  "$schema": "./settings.schema.json",
+  "theme": "ember",
+  "enableAnalytics": false,
+  "skills": [
+    "~/.claude/skills"
+  ],
+  "enableSkillCommands": true,
+  "packages": [
+    "npm:pi-mcp-adapter",
+    "npm:pi-web-access",
+    "npm:pi-agent-browser-native",
+    "npm:pi-updater",
+    "npm:pi-lens",
+    "npm:pi-zentui",
+    "npm:@plannotator/pi-extension",
+    "npm:@vanillagreen/pi-session-manager"
+  ]
+}

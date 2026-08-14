@@ -10,4 +10,10 @@ secrets
 *.config/opencode/dcp.jsonc*
 **/__pycache__/**
 .claude/skills/app-hosting-advisor/
-.pi/extensions/wandb-provider.ts
+
+# pi agent runtime artifacts (kept on disk, not tracked)
+.pi/mcp-traces/
+.pi/agent/mcp.json
+.pi/agent/configs/mcp.json
+.pi/agent/models.json
+.pi/agent/settings.json
