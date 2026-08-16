@@ -17,3 +17,5 @@ secrets
 .pi/agent/configs/mcp.json
 .pi/agent/models.json
 .pi/agent/settings.json
+.pi/agent/prompts/new-project.md
+.claude/skills/.pi/
