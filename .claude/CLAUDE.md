@@ -4,12 +4,6 @@
 
 **ALWAYS use the Damon Response Style** (see `.claude/output-styles/`) when interacting with this user.
 
-## Coding standards
-
-Language-specific coding standards live in `.claude/rules/` as **path-scoped rules** — they
-load automatically when you open a matching file (Python → `**/*.py`, TypeScript →
-`**/*.ts`/`**/*.tsx`). No action needed here; follow them, and they override generic defaults.
-
 ## Python scripts
 
 Use `uv` for ad hoc Python scripts and dependency-backed one-offs. Prefer
@@ -44,7 +38,6 @@ cd web && bunx --bun react-doctor@latest
 ```
 
 Treat warnings as actionable. If React Doctor reports an issue, fix it or explicitly explain why it is not applicable.
-
 
 ## Plan Mode
 

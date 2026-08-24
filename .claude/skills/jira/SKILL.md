@@ -57,7 +57,8 @@ Use `searchJiraIssuesUsingJql` with targeted fields and `maxResults <= 100`. Fol
 ### Create or edit
 
 - Resolve the project, issue type, user account ID, transition ID, parent, story-points field ID, sprint field ID, and other custom-field IDs before writing.
-- Before creating any ticket, require both a story-point estimate and a destination: a named sprint or the backlog. If either is missing, ask the user one concise question that requests both missing choices. Do not create the ticket until they answer.
+- Before creating an implementation ticket owned by the user's team, require both a story-point estimate and a destination: a named sprint or the backlog. If either is missing, ask the user one concise question that requests both missing choices. Do not create the ticket until they answer.
+- External feature requests and intake submissions owned and triaged by another team are exempt from the story-point and sprint requirement. Leave story points, sprint, and assignee unset unless the user or the destination intake contract explicitly provides them, so the owning project's automation and triage process can route the request.
 - Use whole-number story-point estimates from `1` through `8`. Each point represents half a working day: `1` = 0.5 day, `2` = 1 day, `3` = 1.5 days, through `8` = 4 days. If the work appears larger than `8`, recommend splitting it instead of assigning a larger estimate.
 - Always set story points during ticket creation. If the selected issue type does not expose a story-points field, stop and explain the field/configuration problem rather than silently creating an unestimated ticket.
 - For a named sprint, resolve the real sprint ID before writing and set it during creation. For the backlog, leave the sprint field unset; do not pass `null` unless clearing an existing sprint was explicitly requested.
@@ -99,14 +100,31 @@ Use this section when drafting, creating, or improving Jira tickets.
 
 ## Required sections
 
-Use these sections, in order:
+For general tickets, use these sections in order:
 
 1. `Description`
 2. `Technical Context` (only when real technical guidance exists)
 3. `Entrance Criteria`
 4. `Acceptance Criteria`
 
-Use `template.jinja2` from this skill directory as the output shape.
+Use `template.jinja2` from this skill directory as the general output shape.
+
+### Data Infrastructure & Analytics request intake
+
+Use `dia-intake-template.jinja2` when the user asks for a Data Infrastructure & Analytics intake, a BODE intake, or references `/dia-request-intake`. This intake-specific shape replaces the general section order above and mirrors the Canvas app in `apps/it-engineering/dia-request-intake`.
+
+- Use `request_title` as the Jira summary.
+- Required inputs are first name, last name, work email, team or department, request title, description/business context, success criteria, target date, and intended consumers.
+- Before creating the ticket, ask one compact question for any missing required inputs. Do not block on unanswered optional inputs.
+- Optional inputs are manager or sponsor, related Jira tickets, request type, data sources, number of users, data sensitivity, dependencies or blockers, additional notes, and attachments.
+- Request Type values are `New dashboard / report`, `New data pipeline / dataset`, `Change to existing pipeline or report`, `Data access / permissions`, `Ad-hoc analysis`, and `Other`. Accept more than one.
+- Data Sensitivity values are `PII`, `Standard`, `MNPI`, `SOX`, `Not Applicable`, and `Other (Please Specify)`.
+- Require `data_sensitivity_other` only when Data Sensitivity is `Other (Please Specify)`.
+- Convert the requester's Success Criteria / Acceptance Criteria text into independently verifiable ADF task items without inventing scope.
+- Resolve real Jira issue references and people before using inline cards or mentions. Do not convert unverified free text into links or mentions.
+- Omit unanswered optional values where the template allows it; use `None identified.` only for dependencies or blockers and `None provided.` only for additional notes.
+
+The Canvas app currently routes submissions to project `BODE` as a `Story`, with priority `Medium` and parent `BODE-6895`. Treat these as app-specific routing defaults, not universal Jira defaults. This is an external intake: do not require story points or a sprint, and leave the assignee unset for project automation unless the user explicitly requests an assignee. Follow the remaining metadata-discovery and creation safety rules before writing to Jira.
 
 ### Description
 

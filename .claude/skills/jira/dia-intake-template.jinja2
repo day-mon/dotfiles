@@ -1,0 +1,59 @@
+{#
+Data Infrastructure & Analytics intake template.
+
+Inputs use the Canvas form's field names. request_type, attachments, and
+acceptance_criteria are lists.
+
+Jira field mapping:
+- summary: request_title
+- description: rendered template below
+- acceptance criteria: render acceptance_criteria as ADF task items and, when
+  supported, also set the project's dedicated Acceptance Criteria field
+#}
+## Description
+
+{{ description | default("TODO: Describe what you are trying to accomplish, why it matters, and the intended business outcome.", true) }}
+
+## Requester Information
+
+- **First Name:** {{ first_name | default("TODO", true) }}
+- **Last Name:** {{ last_name | default("TODO", true) }}
+- **Work Email:** {{ work_email | default("TODO", true) }}
+- **Team / Department:** {{ team_department | default("TODO", true) }}
+{% if manager_sponsor is defined and manager_sponsor %}- **Manager / Sponsor Name:** {{ manager_sponsor }}
+{% endif %}
+## Request Details
+
+- **Request Title:** {{ request_title | default("TODO: Add the Jira summary.", true) }}
+{% if request_type is defined and request_type %}- **Request Type:** {{ request_type | join(", ") }}
+{% endif %}{% if related_jira is defined and related_jira %}- **Related Jira Tickets:** {{ related_jira }}
+{% endif %}
+## Scope & Timeline
+
+- **Target Date:** {{ target_date | default("TODO", true) }}
+
+## Data & Access
+
+{% if data_sources is defined and data_sources %}- **Data Sources:** {{ data_sources }}
+{% endif %}{% if number_of_users is defined and number_of_users %}- **Number of Users:** {{ number_of_users }}
+{% endif %}- **Intended Consumers:** {{ intended_consumers | default("TODO", true) }}
+{% if data_sensitivity is defined and data_sensitivity %}- **Data Sensitivity:** {{ data_sensitivity }}
+{% endif %}{% if data_sensitivity_other is defined and data_sensitivity_other %}- **Data Sensitivity (Other):** {{ data_sensitivity_other }}
+{% endif %}
+## Additional Context
+
+- **Known Dependencies or Blockers:** {{ dependencies | default("None identified.", true) }}
+- **Additional Notes:** {{ additional_notes | default("None provided.", true) }}
+{% if attachments is defined and attachments %}- **Attachments:** {{ attachments | join(", ") }}
+{% endif %}
+## Acceptance Criteria
+
+Render this section as a Jira action-item list (ADF `taskList` / `taskItem`). Convert the requester's Success Criteria / Acceptance Criteria text into independently verifiable outcomes without adding scope.
+
+{% if acceptance_criteria is defined and acceptance_criteria %}
+{% for item in acceptance_criteria %}
+- [ ] {{ item }}
+{% endfor %}
+{% else %}
+- [ ] TODO: Convert the requester's success criteria into a concrete, testable outcome.
+{% endif %}
