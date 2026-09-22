@@ -22,9 +22,11 @@ zsh_add_plugin "hlissner/zsh-autopair"
 zsh_add_plugin "bobsoppe/zsh-ssh-agent"
 zsh_add_plugin "mafredri/zsh-async"
 zsh_add_plugin "romkatv/zsh-defer"
-(( $+commands[starship] )) && eval "$(starship init zsh)"
-(( $+commands[direnv] )) && eval "$(direnv hook zsh)"
-(( $+commands[mise] )) && eval "$(/Users/dmontague/.local/bin/mise activate zsh)" # added by https://mise.run/zsh
+# Cached tool init — avoids ~80ms of subprocess spawns per shell.
+# Regenerate after upgrading a tool: `regen-zsh-cache` (defined in functions.zsh)
+zsh_add_file "cache/starship.zsh"
+zsh_add_file "cache/direnv.zsh"
+zsh_add_file "cache/mise.zsh"
 
 zsh_add_file "ghostty.zsh"
 

@@ -1,4 +1,5 @@
 #!/bin/zsh
+# shellcheck disable=SC1071  # zsh file; ShellCheck only parses POSIX-family shells
 
 # Function
 function take () {
@@ -92,11 +93,20 @@ function kill_pid() {
 
 function zsh_add_plugin() {
     PLUGIN_NAME=$(echo $1 | cut -d "/" -f 2)
-    if [ -d "$ZDOTDIR/plugins/$PLUGIN_NAME" ]; then
-        # For plugins
-        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh" || \
-        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
-    else
+    if [ ! -d "$ZDOTDIR/plugins/$PLUGIN_NAME" ]; then
         git clone "git@github.com:$1.git" "$ZDOTDIR/plugins/$PLUGIN_NAME"
     fi
+    zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh" || \
+    zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
+}
+
+# Regenerate cached tool init scripts (run after upgrading starship/mise/direnv)
+function regen-zsh-cache() {
+    mkdir -p "$ZDOTDIR/cache"
+    (( $+commands[starship] )) && starship init zsh --print-full-init > "$ZDOTDIR/cache/starship.zsh"
+    (( $+commands[direnv] )) && direnv hook zsh > "$ZDOTDIR/cache/direnv.zsh"
+    (( $+commands[mise] )) && mise activate zsh --shims > "$ZDOTDIR/cache/mise.zsh"
+    zcompile "$ZDOTDIR"/cache/*.zsh
+    local cached_files=($ZDOTDIR/cache/*.zsh)
+    echo "regenerated: ${cached_files//$ZDOTDIR\/cache\//}"
 }
