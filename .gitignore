@@ -19,3 +19,4 @@ secrets
 .pi/agent/settings.json
 .pi/agent/prompts/new-project.md
 .claude/skills/.pi/
+*.zwc
