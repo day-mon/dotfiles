@@ -48,13 +48,28 @@ const audio = await client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
 Readable.fromWeb(audio).pipe(createWriteStream("output.mp3"));
 ```
 
-### cURL
+### CLI
+
+Use `say` to play text immediately with the default voice and `eleven_v3` model:
 
 ```bash
-curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
-  -H "xi-api-key: $ELEVENLABS_API_KEY" -H "Content-Type: application/json" \
-  -d '{"text": "Hello!", "model_id": "eleven_multilingual_v2"}' --output output.mp3
+elevenlabs say "Hello!"
 ```
+
+Pipe text into `say` when another command produces the input:
+
+```bash
+echo "The build finished successfully." | elevenlabs say
+```
+
+Use the API command when you need to set request parameters directly:
+
+```bash
+elevenlabs text-to-speech convert --voice-id JBFqnCBsd6RMkjVDRZzb \
+  --text "Hello!" --model-id eleven_multilingual_v2 --output output.mp3
+```
+
+The CLI reads `ELEVENLABS_API_KEY` from the environment automatically.
 
 ## Models
 

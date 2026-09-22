@@ -52,6 +52,22 @@ function createTicket({ key, project, assignee, priority }: CreateTicketArgs) {
 
 Keep signatures imposed by libraries unchanged.
 
+## Error handling
+
+Prefer `.catch` and `.finally` over a bare `try { } catch { } finally { }` when wrapping a single promise — the chain keeps the error path beside the call it handles instead of an extra block nesting the whole body.
+
+```typescript
+return foo()
+  .catch((error: unknown) => {
+    logger.error({ err: error }, "foo failed");
+    throw error;
+  });
+```
+
+When the catch handler rethrows, the `await` adds nothing — the returned promise carries the rejection. `return await` matters only inside a surrounding `try`.
+
+Use `try { } catch { }` when several awaits share one error path, when `finally` cleanup interleaves with the protected body, or when the caught error must merge with synchronous throws.
+
 ## Collections
 
 Prefer `map`, `filter`, `reduce`, and `flatMap` to index-driven loops.

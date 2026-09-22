@@ -1,6 +1,6 @@
 ---
 name: jira
-description: Manage CoreWeave Jira through the authenticated Stargate Atlassian MCP, and draft clear Jira tickets. Use for viewing, searching, creating, editing, assigning, transitioning, commenting on, linking, worklogging, or summarizing Jira issues; daily Jira rundowns; and writing stories, tasks, bugs, epics, or acceptance criteria. Use the small local fallback only for board/sprint administration or attachment replacement, which the MCP does not expose.
+description: Manage CoreWeave Jira through the authenticated Stargate Atlassian MCP, inspect and submit Jira Service Management portal forms, and draft clear Jira tickets. Use for viewing, searching, creating, editing, assigning, transitioning, commenting on, linking, worklogging, or summarizing Jira issues; completing service portal requests; daily Jira rundowns; and writing stories, tasks, bugs, epics, or acceptance criteria. Use local helpers only for operations the MCP does not expose.
 argument-hint: [ticket goal, issue key, JQL, or rough notes]
 ---
 
@@ -173,6 +173,41 @@ Before constructing or debugging ADF, read `references/adf.md`. Required convent
 - special markers: `emoji` nodes
 
 Do not use em dashes.
+
+# Jira Service Management portal forms
+
+Use the bundled Python SDK helper when the user provides a Jira Service Management portal form URL. It retrieves both the live request-type fields and any embedded Jira Form template, so never infer field IDs, question IDs, or option values from the rendered page.
+
+The helper defaults to `https://coreweave.atlassian.net` and `dmontague@coreweave.com`. It reads `JIRA_API_KEY` from the environment or `.env.local` and accepts `ATLASSIAN_API_TOKEN` as a compatibility fallback. `JIRA_SITE`, `ATLASSIAN_EMAIL`, and `JIRA_EMAIL` can override the defaults; the effective Jira site must match the form URL before credentials are sent.
+
+1. Inspect the current form:
+
+```bash
+uv run ~/.claude/skills/jira/scripts/submit-service-request.py \
+  "https://coreweave.atlassian.net/servicedesk/customer/portal/<desk>/group/<group>/create/<type>"
+```
+
+2. Write a temporary JSON object keyed by visible labels or returned Jira field/question IDs. For ordinary text, URL, date, time, choice, and user questions, supply natural JSON values; the helper converts them to Jira Form answer objects. Do not include `Raise this request on behalf of` in that file; pass its email through `--raise-on-behalf-of`.
+3. Run a dry run and report the exact destination, requester, summary, and mapped fields before submission:
+
+```bash
+uv run ~/.claude/skills/jira/scripts/submit-service-request.py \
+  "<form-url>" \
+  --answers /tmp/jira-service-request.json \
+  --raise-on-behalf-of requester@coreweave.com
+```
+
+4. When the user explicitly requested that exact single submission, repeat with `--apply`. The helper prints the created issue key and URL; report both. Ask for confirmation before bulk form submissions.
+
+```bash
+uv run ~/.claude/skills/jira/scripts/submit-service-request.py \
+  "<form-url>" \
+  --answers /tmp/jira-service-request.json \
+  --raise-on-behalf-of requester@coreweave.com \
+  --apply
+```
+
+The helper fails closed on unknown fields, missing required fields, ambiguous labels, invalid option labels, unsupported unstructured question types, malformed portal URLs, Jira-site credential mismatches, and server-side validation errors. It uses Jira's non-mutating validation endpoint when the tenant exposes it; a `404` is reported as an explicit local-validation fallback. It uses `atlassian-python-api`'s `ServiceDesk` client for request fields, embedded Forms, validation, and creation; do not replace it with browser automation for ordinary portal requests.
 
 # Fallbacks not available through MCP
 
