@@ -15,23 +15,13 @@
   },
   "lsp": {
     "typescript-ls": {},
-    "biome": {
-      "settings": {
-        "inline_config": {
-          "linter": {
-            "rules": {
-              "performance": "all",
-              "correctness": "all",
-              "suspicious": "all",
-              "complexity": "all",
-            },
-            "domains": {
-              "playwright": "all",
-              "test": "all",
-              "types": "all",
-              "react": "all",
-            },
-          },
+    "oxlint": {
+      "initialization_options": {
+        "settings": {
+          "run": "onType",
+          "disableNestedConfig": false,
+          "fixKind": "safe_fix",
+          "unusedDisableDirectives": "deny",
         },
       },
     },
@@ -180,7 +170,7 @@
     "TypeScript": {
       "language_servers": [
         "typescript-ls",
-        "biome",
+        "oxlint",
         "!vtsls",
         "!typescript-language-server",
       ],
@@ -188,7 +178,7 @@
     "TSX": {
       "language_servers": [
         "typescript-ls",
-        "biome",
+        "oxlint",
         "!vtsls",
         "!typescript-language-server",
       ],
@@ -221,7 +211,7 @@
     "toml": true,
     "pyrefly": true,
     "dockerfile": true,
-    "bione": true,
+    "oxc": true,
     "tsgo": true,
     "tombi": true,
   },
