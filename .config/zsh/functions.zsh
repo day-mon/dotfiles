@@ -100,7 +100,7 @@ function zsh_add_plugin() {
     zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
 }
 
-# Regenerate cached tool init scripts (run after upgrading starship/mise/direnv)
+# Regenerate cached tool init scripts after upgrading a tool.
 function regen-zsh-cache() {
     mkdir -p "$ZDOTDIR/cache"
     (( $+commands[starship] )) && starship init zsh --print-full-init > "$ZDOTDIR/cache/starship.zsh"

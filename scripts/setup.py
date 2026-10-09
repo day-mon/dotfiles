@@ -254,7 +254,7 @@ async def pi_setup(paths: Paths) -> None:
 
     # Portable pi config — always symlinked from the repo (tracked).
     pi_agent_src = pi_src / "agent"
-    for name in ("prompts", "scripts", "skills", "themes"):
+    for name in ("extensions", "prompts", "scripts", "skills", "themes"):
         src = pi_agent_src / name
         if await src.exists():
             await relink(src, paths.pi_agent / name)

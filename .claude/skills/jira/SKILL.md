@@ -105,7 +105,8 @@ For general tickets, use these sections in order:
 1. `Description`
 2. `Technical Context` (only when real technical guidance exists)
 3. `Entrance Criteria`
-4. `Acceptance Criteria`
+4. `Out of Scope` (only when work is explicitly excluded or canceled)
+5. `Acceptance Criteria`
 
 Use `template.jinja2` from this skill directory as the general output shape.
 
@@ -138,11 +139,16 @@ Include practical bullets when known: repos, files, services, APIs, flags, dashb
 
 List blocking tickets, decisions, approvals, designs, contracts, credentials, environments, or test data. Link real tickets as `<KEY>: <title> - https://coreweave.atlassian.net/browse/<KEY>`. If none exist, write `None identified.`
 
+### Out of Scope
+
+List work the ticket explicitly does not cover, as a `bulletList` with each item starting with an `:x:` emoji node. Include a short reason when one exists.
+
+When an existing acceptance criterion is canceled, move it here instead of leaving it in the task list: keep its original wording with a `strike` mark, then add the reason. Remove the canceled `taskItem` so the Acceptance Criteria list only holds work that must be completed. Omit the section when nothing is excluded.
+
 ### Acceptance Criteria
 
-Write independently verifiable outcomes. Use checkable ADF action items. Prefix only special cases:
+Write independently verifiable outcomes. Use checkable ADF action items. Out-of-scope or canceled work belongs in Out of Scope, not here. Prefix only this special case:
 
-- `:x:` for explicitly canceled or out-of-scope work
 - `:question_mark:` for unresolved questions required before completion
 
 Avoid vague criteria such as “works as expected” or “update tests.”

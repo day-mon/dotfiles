@@ -25,7 +25,6 @@ zsh_add_plugin "romkatv/zsh-defer"
 # Cached tool init — avoids ~80ms of subprocess spawns per shell.
 # Regenerate after upgrading a tool: `regen-zsh-cache` (defined in functions.zsh)
 zsh_add_file "cache/starship.zsh"
-zsh_add_file "cache/direnv.zsh"
 zsh_add_file "cache/mise.zsh"
 
 zsh_add_file "ghostty.zsh"
