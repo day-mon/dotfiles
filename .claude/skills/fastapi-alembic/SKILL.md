@@ -98,6 +98,47 @@ def upgrade() -> None:
 
 Use `op.batch_alter_table(...)` for the SQLite rebuild path.
 
+## Migrations never import app code
+
+Freeze any value a migration depends on (allowed values for a check constraint, a default) as a
+module constant, and add an app test that compares the frozen copy with its source.
+
+```python
+# versions/011_findings.py
+COVERAGE = ("covered", "absent", "outdated")
+
+# tests/test_migrations.py
+def test_coverage_constraint_matches_contract():
+    assert load_migration("011_findings").COVERAGE == get_args(DocumentationCoverage)
+```
+
+## Detect model/migration drift
+
+Run every migration against the real engine (testcontainers), then diff against the models.
+App tables must show no differences.
+
+```python
+command.upgrade(Config("alembic.ini"), "head")
+with engine.connect() as conn:
+    ctx = MigrationContext.configure(conn, opts={"include_schemas": True, "include_object": include_object})
+    assert compare_metadata(ctx, Base.metadata) == []
+```
+
+Skip tables the app maps but doesn't own, and procrastinate's schema (it migrates itself):
+
+```python
+def include_object(item, name, type_, reflected, compare_to) -> bool:
+    if type_ != "table":
+        return True
+    return item.schema != "procrastinate" and not item.info.get("external")
+```
+
+## Backfill or reset
+
+When a schema change makes old rows unreadable, choose deliberately: backfill when the data
+matters, clear and regenerate when it's disposable. State the choice and the reason in the
+migration docstring, and say which environments it affects.
+
 ## Rules
 
 - `target_metadata = Base.metadata` from your models; never maintain a second metadata.
@@ -105,5 +146,7 @@ Use `op.batch_alter_table(...)` for the SQLite rebuild path.
   inside `asyncio.run(...)`.
 - Read the DB URL from settings (`fastapi-config`), not from `alembic.ini` hardcoding.
 - Always implement `downgrade`.
+- Never import app code from a migration; freeze what it needs and test the copy.
+- Check for model/migration drift against the real engine in CI.
 - Guard schema changes with existence checks; branch on `op.get_context().dialect.name` when
   SQLite and PostgreSQL diverge.

@@ -127,3 +127,19 @@ class TimingMiddleware(BaseHTTPMiddleware):
 
 Use `time.perf_counter()` (monotonic), not `time.time()`. Register these in the app factory in
 reverse execution order alongside `CorrelationIdMiddleware`.
+
+## Logging in app code
+
+```python
+import structlog
+
+log = structlog.get_logger(__name__)
+
+log.info("tickets_dispatched", count=count, queue=queue)
+log.exception("runner_call_failed", task=name)
+```
+
+- The first argument is a stable event name (`snake_case`), not a sentence.
+- Values go in keyword fields so they stay queryable in JSON output.
+- Never `logging.getLogger(__name__)` with `%s` formatting in app modules; keep stdlib loggers
+  for third-party libraries only.

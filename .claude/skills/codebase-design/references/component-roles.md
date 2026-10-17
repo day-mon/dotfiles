@@ -35,7 +35,7 @@ A repository may:
 - own persistence-specific filtering;
 - participate in transactions.
 
-Jira, Slack, payment providers, model providers, and other remote APIs are clients, not repositories.
+Jira, Slack, payment providers, model providers, and other remote APIs are clients, not repositories. A database or warehouse reader (StarRocks, a shared Postgres) is a repository, even when another team owns the database.
 
 Do not create a repository when no application-owned persistence exists.
 
@@ -48,7 +48,11 @@ Modern ORM access may remain directly in a service while queries are simple. Int
 
 ## Client
 
-Encapsulates communication with an external system.
+Talks to an external HTTP API, and nothing else.
+
+- Use the official SDK when one exists (Glean, Slack WebClient, jira.js). Wrap or configure it; don't reimplement it.
+- Use library hooks for auth, retry, timeouts, and logging (ky hooks, aiohttp trace configs, reqwest retry) instead of hand-written wrappers.
+- Missing token or config: throw at construction. Never hold `None` or `null` as a client.
 
 A client owns:
 
@@ -60,7 +64,20 @@ A client owns:
 
 Pure helpers and constants that belong to the client's responsibility (request-expression builders, header sets, user agents) travel on the class as `@staticmethod`, `@classmethod`, or `ClassVar` rather than as module-level functions or constants, so the class stays the single unit to read and test. Only helpers shared across more than one class go module-level.
 
-Keep a trivial single-feature client inside that feature. Move it to a package-level `clients/` directory when multiple features use it or it needs real and fake implementations.
+Clients always live in `clients/`, with a fake or fixture beside the real one when tests need it.
+
+## Model
+
+Behavior that reads only a model's data lives on the model:
+
+- `Job.to_job_out()` instead of a `job_to_out(job)` function;
+- `DocumentResult.empty()` instead of passing a pile of empty args;
+- `Evidence.build(...)` instead of `build_evidence(...)`;
+- `@property` for derived values.
+
+## Errors
+
+One root `AppError(status, message)` per app, with a subclass per case (`JobNotFoundError` with status 404). Services raise. One global handler maps every `AppError` to a shared response format. Routes never catch. Nothing catches an error just to rethrow or wrap it.
 
 ## Schema
 

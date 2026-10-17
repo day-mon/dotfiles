@@ -18,6 +18,9 @@ class Settings(pydantic_settings.BaseSettings):
         env_prefix="MYAPP_",
         env_nested_delimiter="__",
         case_sensitive=False,
+        # .env.example ships blank values and setup copies it to .env;
+        # without this, "" fails min_length and the app can't even import.
+        env_ignore_empty=True,
     )
 ```
 
@@ -34,6 +37,37 @@ class AppSettings(Settings):
     environment: typing.Literal["development", "production"] = "development"
 
 settings = AppSettings()
+```
+
+## File layout
+
+```text
+core/config/
+├── base.py         BaseConfig only: the shared model_config
+├── app.py          AppSettings + app_settings = AppSettings()
+├── glean.py        GleanSettings(env_prefix="GLEAN_") + glean_settings = GleanSettings()
+└── confluence.py   ConfluenceSettings(env_prefix="CONFLUENCE__") + confluence_settings = ...
+```
+
+A subclass's `model_config` merges with `BaseConfig`'s, so each file sets only its
+`env_prefix`. Import the instance (`from app.core.config.glean import glean_settings`);
+don't thread settings through `create_app(settings)` or a `SettingsDep`.
+
+Keep features in one class when they're cross-validated: disabled|live unions whose
+validator spans several of them ("synthesis needs live Jira and conversations") stay
+nested under one `Settings(AppSettings)`.
+
+## Secrets
+
+Expose a property that unwraps the secret or raises, so callers never handle
+`Optional[SecretStr]`:
+
+```python
+@property
+def token(self) -> str:
+    if self.api_token is None:
+        raise ValueError("live sources require GLEAN_API_TOKEN")
+    return self.api_token.get_secret_value()
 ```
 
 ## Literal enums, properties, validators
@@ -89,11 +123,12 @@ class PostgresSettings(pydantic.BaseModel):
     password: str
 
     @property
+    def conninfo(self) -> str:
+        return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+    @property
     def connection_url(self) -> str:
-        return (
-            f"postgresql+asyncpg://{self.username}:{self.password}"
-            f"@{self.host}:{self.port}/{self.database}"
-        )
+        return self.conninfo.replace("postgresql://", "postgresql+psycopg://", 1)
 
 class DatabaseSettings(Settings):
     db: typing.Annotated[
@@ -114,10 +149,18 @@ the engine in `fastapi-sqlalchemy`.
 ## Rules
 
 - One base `Settings` with `env_prefix` + `env_nested_delimiter`; subclass per concern.
+- `base.py` holds only the base config; one file per concern, each ending in a
+  module-level instance.
+- Base config sets `env_ignore_empty=True`.
+- Cross-validated feature unions stay in one class.
+- Secrets reach callers through an unwrapping property, never `.get_secret_value()`
+  scattered at call sites.
 - `Literal` for enumerated options; `@property` for anything derived.
 - Discriminated unions (`Field(discriminator="type")`) for swappable backends; never branch on a
   raw string field.
 - Compute `connection_url` (and similar) as a property on the variant — never duplicate the
   construction logic.
+- Postgres uses the psycopg 3 driver (`postgresql+psycopg`), not asyncpg; procrastinate needs it
+  to defer jobs inside the app's transaction (see `fastapi-background-tasks`).
 - Enforce cross-field invariants with `@model_validator(mode="after")`.
 - Default to dev-friendly backends so the service runs with zero env vars locally.

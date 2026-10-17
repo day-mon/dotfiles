@@ -130,4 +130,8 @@ Use 1-based pages; expose `offset` for the query layer.
 - Prefer a function returning an instance over a class dependency.
 - Singletons (cache, db handle) live on `app.state` and are read inside the dependency — see
   `fastapi-app-composition`.
+- Use FastAPI `Depends` for HTTP apps; never add Dishka to one. Dishka is only for runnables
+  `Depends` can't reach (workers, CLI, cron).
+- One alias per singleton (`TicketAgentDep`, `GleanDep`), not one grab-bag object
+  holding several.
 - Honor the async/sync rule from `fastapi-routing`: blocking dependency → plain `def`.

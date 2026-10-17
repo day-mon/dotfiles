@@ -125,7 +125,7 @@ Use `dia-intake-template.jinja2` when the user asks for a Data Infrastructure & 
 - Resolve real Jira issue references and people before using inline cards or mentions. Do not convert unverified free text into links or mentions.
 - Omit unanswered optional values where the template allows it; use `None identified.` only for dependencies or blockers and `None provided.` only for additional notes.
 
-The Canvas app currently routes submissions to project `BODE` as a `Story`, with priority `Medium` and parent `BODE-6895`. Treat these as app-specific routing defaults, not universal Jira defaults. This is an external intake: do not require story points or a sprint, and leave the assignee unset for project automation unless the user explicitly requests an assignee. Follow the remaining metadata-discovery and creation safety rules before writing to Jira.
+The Canvas app currently routes submissions to project `BODE` as a `Story`, with priority `Medium` and parent `BODE-6895`. BODE Stories also require On-Call Queue (`customfield_10264`); intake tickets set it to `False` via `additional_fields: {"customfield_10264": {"id": "10505"}}`. Treat these as app-specific routing defaults, not universal Jira defaults. This is an external intake: do not require story points or a sprint, and leave the assignee unset for project automation unless the user explicitly requests an assignee. Follow the remaining metadata-discovery and creation safety rules before writing to Jira.
 
 ### Description
 

@@ -33,9 +33,23 @@ if (!(element instanceof HTMLElement)) {
 | Constants | `SCREAMING_SNAKE_CASE` |
 | Booleans | Verb prefix such as `isLoading` or `hasError` |
 
+Constants live on the class that uses them: `private static readonly MAX_STEPS = 8`. Helpers are private or static methods. Keep them module-level only when several classes share them.
+
+```typescript
+export class ConciergeAgent {
+  static readonly MAX_STEPS = 20;
+
+  static create({ model }: { model: LanguageModel }): ConciergeAgent {
+    return new ConciergeAgent(model);
+  }
+
+  private constructor(private readonly model: LanguageModel) {}
+}
+```
+
 ## Function boundaries
 
-Use positional parameters for two or fewer arguments. For more than two arguments, accept one destructured object with a named interface.
+Use one destructured object with a named interface when a function has more than two parameters or any optional parameter. Never pass `undefined` or `{}` as a placeholder argument. No IIFEs; make it a private method.
 
 ```typescript
 interface CreateTicketArgs {
@@ -54,19 +68,33 @@ Keep signatures imposed by libraries unchanged.
 
 ## Error handling
 
-Prefer `.catch` and `.finally` over a bare `try { } catch { } finally { }` when wrapping a single promise — the chain keeps the error path beside the call it handles instead of an extra block nesting the whole body.
+Do not write `try { } catch { }`. Use the callback chain or `better-result`.
 
 ```typescript
-return foo()
-  .catch((error: unknown) => {
-    logger.error({ err: error }, "foo failed");
-    throw error;
+return this.execute(input).finally(() => span.end());
+
+const history = await this.loadChannelHistory(conversationId)
+  .catch((err: unknown) => {
+    logger.warn({ err, conversationId }, "stored history lookup failed");
+    return [];
   });
+
+const parsed = Result.try(() => JSON.parse(text));
 ```
 
-When the catch handler rethrows, the `await` adds nothing — the returned promise carries the rejection. `return await` matters only inside a surrounding `try`.
+- Never catch to rethrow or wrap. Let errors reach the global handler.
+- `async` functions already wrap returns and throws. Never write `Promise.resolve` or `Promise.reject` inside them.
+- Know the error type. Catch the specific error (`instanceof`), not every error, when only one case is recoverable.
 
-Use `try { } catch { }` when several awaits share one error path, when `finally` cleanup interleaves with the protected body, or when the caught error must merge with synchronous throws.
+## No hacked-together types
+
+Banned: `ReturnType<typeof x>`, `Awaited<ReturnType<…>>`, `Parameters<typeof f>[0]`, `as { … }` coercions. Import the library's exported type (`ToolLoopAgent`, `LanguageModel`, `StepResult`) or define a named type.
+
+No `typeof` checks when a zod schema can parse the value instead. `error?.status === 429` beats a hand-written type guard.
+
+## Logging
+
+Use pino: `logger.error({ err, ...context }, "message")`. Never `console`. Never hand-build error-chain strings; pino's `err` serializer prints the stack and causes.
 
 ## Collections
 
@@ -151,13 +179,13 @@ Use the repository's existing commands first. Supplement them rather than replac
 
 Use Bun for dependency and script work. Prefer `bunx --bun` for one-off TypeScript tools. Fall back to plain `bunx` when a package is incompatible with Bun's runtime.
 
-Run Biome alongside the repository's configured formatter and linter. Scope it to changed files when a full-repository run would be slow or would rewrite unrelated code.
+Run the repository's configured linter (oxlint or Biome). When none is configured, run Biome scoped to changed files.
 
 ```bash
-bunx --bun @biomejs/biome check .
-bunx --bun @biomejs/biome format --write .
-bunx --bun @biomejs/biome lint --write .
+bunx --bun @biomejs/biome check <changed files>
 ```
+
+Tests live in `tests/`, not next to source. Mock HTTP with `msw`.
 
 Run the repository's type-check script when one exists. Otherwise run:
 
@@ -165,4 +193,4 @@ Run the repository's type-check script when one exists. Otherwise run:
 bunx --bun tsc --noEmit
 ```
 
-Before completing TypeScript work, verify the changed code is strict, contains no `any`, proves each assertion, models state explicitly, narrows unknown values, and passes the repository checks, Biome, and TypeScript for the changed scope. Report any blocked check and its exact reason.
+Before completing TypeScript work, verify the changed code is strict, contains no `any`, no `try/catch`, no hacked-together types, and no module-level constants that belong to a class, and passes the repository's linter and TypeScript for the changed scope. Report any blocked check and its exact reason.

@@ -63,17 +63,20 @@ from myapp.core.dependencies import database
 
 @contextlib.asynccontextmanager
 async def lifecycle(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
-    app.state.db = database.create()
-    client = SomeClient()
-    app.state.service = MyService(client=client)
-
-    yield
-
-    await app.state.db.dispose()
-    await client.close()
+    async with (
+        openai.AsyncOpenAI(api_key=app_settings.openai_key) as llm,
+        ConfluencePdfReader.create(confluence_settings) as pdfs,
+        GleanKnowledge.create(glean_settings, pdfs=pdfs) as knowledge,
+    ):
+        app.state.ticket_agent = TicketAgent.live(llm, knowledge)
+        yield
 ```
 
-Initialize dependencies before the things that consume them; await every close on shutdown.
+One parenthesized `async with` opens resources in dependency order and closes them in
+reverse; no `AsyncExitStack`. Each client builds itself with
+`@classmethod @asynccontextmanager def create(cls, config)`. Build everything here, not
+lazily, so a bad credential fails startup instead of the first request. Pick fixture vs
+live implementations here too, so no route ever checks for `None`.
 
 ## Exception handlers
 
@@ -133,6 +136,15 @@ lean: see [references/logging.md](references/logging.md).
 - `configure_logging()` runs before `fastapi.FastAPI(...)`.
 - Version from `importlib.metadata.version(...)`, never hardcoded.
 - Singletons live on `app.state`, created in the lifespan and closed on shutdown.
+- One SQLAlchemy engine per process: the entrypoint opens one `async_sessionmaker` and hands it
+  to every component in the process (API state, worker container); it is disposed last.
+- Request auth is a service with no FastAPI imports, built once in the lifespan and held on
+  `app.state`; the `Depends` function only reads the header and calls it.
+- App modules log with `structlog.get_logger()` and keyword fields, never
+  `logging.getLogger`; stdlib libraries render through the shared `ProcessorFormatter`.
+- Open lifespan resources in one `async with`; clients construct via `create()`.
+- A job worker started in the lifespan means one uvicorn worker per pod (scale with
+  replicas), and shutdown budgets that step down: k8s grace > uvicorn graceful + job drain.
 - Add middleware in reverse execution order.
 - Register exception handlers via one `register(app)`; route every error through a shared
   response builder.

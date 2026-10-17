@@ -1,69 +1,74 @@
 # Python Library Choices
 
-Prefer these defaults; record the concrete pick in the design output and justify any deviation. Other languages get sibling directories (`references/<language>/library-choices.md`); keep one default per concern.
+Prefer these defaults; record the concrete pick in the design output and justify any deviation. Keep one default per concern.
+
+| Concern | Default | Why |
+| --- | --- | --- |
+| Schema validation | `pydantic` | One model layer shared by API schemas, internal types, and config. |
+| Environment config | `pydantic-settings` | Typed env parsing, invariants via `model_validator`. |
+| HTTP client | `aiohttp` + `aiohttp-retry` | Fastest async client and actively maintained. |
+| DI (HTTP) | FastAPI `Depends` | The framework already has DI; no container in HTTP apps. |
+| DI (workers, CLI, cron) | `dishka` | Only where `Depends` can't reach; scoped providers with async teardown. |
+| Queue / crons | none, then `procrastinate` | Avoid a queue until work must be durable, retried, or scheduled. Then procrastinate: Postgres is the broker, so jobs commit in the same transaction as the data. Own schema, never `public`. |
+| CLI | `cyclopts` | Class-based commands in `commands/`. |
+| Multi-process container | `supervisord` | Runs api + worker in one image. |
+| Status / enum fields | `Literal[...]` | Including SQLAlchemy `Mapped[Literal[...]]` and pydantic fields. |
+
+HTTP-client rule: use `aiohttp`; do not introduce a second HTTP client (`httpx`/`requests`) for ergonomics. Use the session's `ClientTimeout`; never wrap calls in `asyncio.timeout`.
 
 ## Class-based client pattern (`aiohttp` + `pydantic`)
 
-One class per external API. Every operation funnels through a single private `_request`, which is the only place that knows about HTTP: literal method set, shared request options, `raise_for_status`, trace-config logging, timeouts, retry. Operation methods only build path/params and validate the response into pydantic models.
+One class per external API. Every operation funnels through a single private `_request`, the only place that knows about HTTP. Operation methods only build path/params and validate the response into pydantic models. First check whether an official SDK exists; this pattern is for APIs without one.
 
 ```python
 from __future__ import annotations
 
 import logging
-from typing import Any, Literal, TypeVar
+from typing import Any, ClassVar, Literal, Self, TypeVar
 
 import aiohttp
 from aiohttp.client import _RequestOptions
-from typing_extensions import Unpack
 from aiohttp_retry import ExponentialRetry, RetryClient
 from pydantic import TypeAdapter
+from typing_extensions import Unpack
 
 log = logging.getLogger(__name__)
 
-Method = Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
 T = TypeVar("T")
 
 
 class WidgetsClient:
-    """Client for the Widgets API.
+    TIMEOUT_SECONDS: ClassVar[float] = 30
+    RETRY_ATTEMPTS: ClassVar[int] = 3
 
-    One class per external API; owns its session and closes it explicitly.
-    Construct clients inside a running event loop (aiohttp requires one),
-    i.e. at the async composition root — a FastAPI lifespan or
-    ``async def main``, never at module scope.
-
-    :attribute session: The retry-wrapped aiohttp session used for all requests.
-    """
-
-    def __init__(self, *, base_url: str, token: str, timeout_seconds: float = 30) -> None:
-        """Initialize the client and its session.
-
-        :param base_url: API base URL, e.g. ``https://api.example.com``.
-        :param token: Bearer token sent on every request.
-        :param timeout_seconds: Total per-request timeout.
-        """
+    def __init__(self, *, base_url: str, token: str) -> None:
         session = aiohttp.ClientSession(
             base_url=base_url,
             headers={"Authorization": f"Bearer {token}"},
-            timeout=aiohttp.ClientTimeout(total=timeout_seconds),
-            raise_for_status=True,  # surfaces as aiohttp.ClientResponseError
+            timeout=aiohttp.ClientTimeout(total=self.TIMEOUT_SECONDS),
+            raise_for_status=True,
             trace_configs=[self._request_logging_trace()],
         )
-        # RetryClient wraps the session; exponential backoff on 5xx/timeouts.
         self.session = RetryClient(
-            client_session=session, retry_options=ExponentialRetry(attempts=3)
+            client_session=session,
+            retry_options=ExponentialRetry(attempts=self.RETRY_ATTEMPTS),
         )
 
+    @classmethod
+    def create(cls, settings: WidgetsSettings) -> Self:
+        return cls(base_url=settings.base_url, token=settings.token)
+
     async def aclose(self) -> None:
-        """Close the underlying session."""
         await self.session.close()
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        await self.aclose()
 
     @staticmethod
     def _request_logging_trace() -> aiohttp.TraceConfig:
-        """Build the trace config that logs requests.
-
-        :returns: A trace config logging method, URL, and status once per response.
-        """
         trace = aiohttp.TraceConfig()
 
         async def on_request_end(
@@ -76,59 +81,22 @@ class WidgetsClient:
         trace.on_request_end.append(on_request_end)
         return trace
 
-    async def __aenter__(self) -> WidgetsClient:
-        return self
-
-    async def __aexit__(self, *exc: object) -> None:
-        await self.aclose()
-
-    # --- the only method that knows about HTTP ---
-
     async def _request(
         self,
         *,
-        method: Method,
+        method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"],
         path: str,
-        model: type[T] | None = None,
+        model: type[T],
         **request_opts: Unpack[_RequestOptions],
     ) -> T:
-        """Send one request and validate the JSON body.
-
-        The only method that knows about HTTP; operations call this.
-
-        :param method: HTTP method.
-        :param path: Path relative to ``base_url``.
-        :param model: Pydantic model (or container like ``list[Widget]``) to
-            validate the response into. Omit for endpoints whose body is ignored.
-        :param request_opts: Extra ``aiohttp`` options (``params``, ``json``,
-            ``data``, ``headers``, ...).
-        :returns: The response body validated into ``model``, or the raw JSON
-            when ``model`` is omitted.
-        :raises aiohttp.ClientResponseError: Non-2xx status (``raise_for_status``).
-        :raises pydantic.ValidationError: Body does not match ``model``.
-        """
         async with self.session.request(method=method, url=path, **request_opts) as response:
             data = await response.json()
-        if model is None:
-            return data
         return TypeAdapter(model).validate_python(data)
 
-    # --- operations: path + expected model only, every arg keyword-only ---
-
     async def get_widget(self, *, widget_id: str) -> Widget:
-        """Fetch one widget.
-
-        :param widget_id: The widget's id.
-        :returns: The widget.
-        """
         return await self._request(method="GET", path=f"/widgets/{widget_id}", model=Widget)
 
     async def list_widgets(self, *, page_size: int = 50) -> list[Widget]:
-        """List widgets.
-
-        :param page_size: Maximum number of widgets to return.
-        :returns: A page of widgets.
-        """
         return await self._request(
             method="GET",
             path="/widgets",
@@ -139,63 +107,51 @@ class WidgetsClient:
 
 Rules for this shape:
 
-- Every argument after `self` is keyword-only, on `__init__`, operations, and `_request` itself.
-- `_request` auto-validates through `TypeAdapter(model)` — pass `Widget` for one object, `list[Widget]` or `dict[str, Widget]` for containers; no wrapper `BaseModel` just to hold a list. Omit `model=` for endpoints whose body is ignored.
-- `**request_opts` is typed as `Unpack[_RequestOptions]` from `aiohttp.client` — `params=`, `json=`, `data=`, `headers=` etc. get full type checking without redeclaring aiohttp's argument list. It is a private name but stable; if that ever bothers you, alias it once in the client module and import from there.
-- `_request` is private; public methods never touch `aiohttp` types.
-- Docstrings are reStructuredText/Sphinx style (`:param:`, `:returns:`, `:raises:`).
-- `raise_for_status=True` on the session, not per call; translate `ClientResponseError` at the service layer, not here.
-- Session lifecycle is explicit (`aclose` / async context manager), wired at the composition root. The session is built eagerly in `__init__` — but only construct the client where a loop is running.
-- The trace config is a `@staticmethod` on the client class: per-client logging behavior travels with the class, no module-level helpers to import.
-- First check whether an official SDK exists (see SKILL.md step 4); this pattern is for APIs without one.
-
-| Concern | Default | Why |
-| --- | --- | --- |
-| Schema validation | `pydantic` | One model layer shared by API schemas, internal types, and config. |
-| Environment config | `pydantic-settings` | Typed env parsing (`env_prefix`, nested delimiter), invariants via `model_validator`. |
-| HTTP client | `aiohttp` | Fastest async client by a wide margin and actively maintained; pairs with `aiohttp-retry` for backoff. |
-
-HTTP-client rule: use `aiohttp`; do not introduce a second HTTP client (`httpx`/`httpx2`/`requests`) for ergonomics. When a performance number matters, re-benchmark in place — published comparisons disagree between 5% and 35x depending on pooling, concurrency, and whether bodies are read (see encode/httpx#3215 for how often people get this wrong).
+- Every argument after `self` is keyword-only.
+- `_request` validates through `TypeAdapter(model)`: pass `Widget`, `list[Widget]`, or `dict[str, Widget]`. No wrapper `BaseModel` just to hold a list.
+- `**request_opts` is typed as `Unpack[_RequestOptions]`, so `params=`, `json=`, `headers=` are type-checked without redeclaring aiohttp's arguments.
+- Public methods never touch `aiohttp` types.
+- Constants are `ClassVar`s, helpers are `@staticmethod`s, construction from settings is `create()`.
+- `raise_for_status=True` on the session. Errors propagate to the app's global handler; the client does not catch or wrap them.
+- Session lifecycle is explicit (`aclose` / async context manager), owned by a DI provider. Construct only where an event loop is running.
+- No docstrings; names and types carry the contract.
 
 ## Configuration (`pydantic-settings`)
 
-One `BaseSettings` subclass per component. Never hand-roll `os.environ` parsing — no `int(os.environ.get(...))` guards or module-scope constants derived from env.
+One `BaseSettings` subclass per component. Never hand-roll `os.environ` parsing.
 
 ```python
 from pathlib import Path
+from typing import Final, Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class WidgetsConfig(BaseSettings):
-    """Runtime knobs, each sourced from its environment variable."""
-
+class WidgetsSettings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore", frozen=True)
 
     tenant: str = Field(default="acme", validation_alias="WIDGETS_TENANT")
-    cdp_port: int = Field(default=9222, validation_alias="WIDGETS_CDP_PORT")
+    token: str = Field(validation_alias="WIDGETS_TOKEN")
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     cache_dir: Path = Field(
         default=Path.home() / ".cache" / "widgets",
         validation_alias="WIDGETS_CACHE",
     )
-    optional_file: Path | None = Field(default=None, validation_alias="WIDGETS_FILE")
 
     @property
-    def api_base(self) -> str:
+    def base_url(self) -> str:
         return f"https://{self.tenant}.example.com/api"
 
 
-def load_config() -> WidgetsConfig:
-    """Read the environment once and return an immutable settings object."""
-    return WidgetsConfig()
+settings: Final = WidgetsSettings()
 ```
 
 Rules for this shape:
 
-- `frozen=True` + `extra="ignore"`: settings are immutable, and unrelated env vars never crash startup.
-- Explicit `validation_alias` per field when a project mixes env prefixes (legacy names, third-party names like `DIA_*`); only use `env_prefix` when every variable shares one prefix.
-- Let pydantic do type coercion (`int`, `Path`, `Literal` unions); validation errors at construction are the only checking the config needs. Integer fields must never use pattern `int(os.environ.get(...) or default)`.
-- Derived values (URLs, file paths under `cache_dir`) are read-only `@property`s on the settings class, never stored fields.
-- Single-process tools and scripts: declare `config: Final = WidgetsConfig()` in the config module and import the singleton; env parsing at import time is the desired fail-fast, and pydantic-settings already supports per-construction overrides (`WidgetsConfig(tenant="acme")`) for tests. App servers with a lifespan: construct at the composition root and pass the instance down instead.
-- Do not call `WidgetsConfig()` inside libraries — receive the settings object.
+- `frozen=True` + `extra="ignore"`.
+- Required values have no default, so a missing env var fails at startup.
+- Let pydantic coerce types (`int`, `Path`, `Literal`). Never `int(os.environ.get(...) or default)`.
+- Derived values are `@property`s, never stored fields.
+- Define `settings: Final = Settings()` at module level. Do not use `@lru_cache def get_settings()`. Tests override by constructing `Settings(...)` and injecting it.
+- Libraries never construct settings; they receive the object.

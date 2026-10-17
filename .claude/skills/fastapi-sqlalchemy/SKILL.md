@@ -131,7 +131,7 @@ class Database:
 
 def create() -> Database:
     engine = sa_async.create_async_engine(settings.db.connection_url, echo=settings.echo)
-    factory = sa_async.async_sessionmaker(engine, expire_on_commit=settings.expire_on_commit)
+    factory = sa_async.async_sessionmaker(engine, expire_on_commit=False)
     return Database(engine=engine, session_factory=factory)
 
 async def get_session(
@@ -155,3 +155,8 @@ The `connection_url` comes from the discriminated-union DB settings in `fastapi-
 - One engine + one `async_sessionmaker` for the app, stored on `app.state.db`.
 - One session per request via the `get_session` yield dependency; never share sessions.
 - Migrations are managed with Alembic — see `fastapi-alembic`.
+- `expire_on_commit=False`: async sessions can't lazy-load, so expired objects break every
+  read after a commit. Writes use `sessions.begin()`; reads use `sessions()`.
+- Derived fields are hybrid properties, value objects are composites, ordered children use
+  `ordering_list`, and tables the app doesn't own are mapped read-only — see
+  [references/orm-patterns.md](references/orm-patterns.md).

@@ -11,20 +11,23 @@ Apply every relevant rule to Python source.
 - Use `T | None` and other `|` unions on Python 3.10 and later.
 - Prefer early returns, f-strings, and comprehensions over `map` and `filter`.
 
-## Immutable constants
+## Constants and helpers
 
-Use immutable types for module-level collection constants.
+Constants live on the owning class as `ClassVar`s. Helpers are `@staticmethod`s or `@classmethod`s. Construction from settings is `create()`. Module-level only when several classes share them.
 
 ```python
 from types import MappingProxyType
-from typing import Final
+from typing import ClassVar
 
-ALLOWED_METHODS: Final = frozenset({"GET", "POST", "PUT"})
-DEFAULT_HEADERS: Final = MappingProxyType({"content-type": "application/json"})
-STATUS_CODES: Final = (200, 201, 204)
+
+class JiraClient:
+    ALLOWED_METHODS: ClassVar = frozenset({"GET", "POST"})
+    DEFAULT_HEADERS: ClassVar = MappingProxyType({"content-type": "application/json"})
 ```
 
-Use a tuple instead of a list, a `frozenset` instead of a set, and `MappingProxyType` instead of a mutable dictionary.
+Use immutable types: a tuple instead of a list, a `frozenset` instead of a set, and `MappingProxyType` instead of a mutable dictionary.
+
+Use `Literal[...]` for fixed sets of values (statuses, HTTP methods, schema versions like `Literal[1, 2] = 2`).
 
 ## Assignment expressions
 
@@ -33,6 +36,9 @@ Use `:=` when it removes a repeated operation or makes a loop or comprehension c
 ```python
 if match := re.search(pattern, text):
     return match.group(1)
+
+if (row := await self.repository.detail(job_id)) is None:
+    raise RunNotFoundError
 
 while chunk := file.read(8192):
     process(chunk)
@@ -59,26 +65,18 @@ def connect(
     ...
 ```
 
+## Validation
+
+Let pydantic validate. Use `@validate_call`, `model_validator`, and `@property` instead of manual checks in function bodies. Compare objects with pydantic models, never with `json.dumps(..., sort_keys=True)`. No `getattr` or `cast` to dodge typing.
+
+## Errors and logging
+
+Raise subclasses of the app's root `AppError`, which carries `status_code` and `message`. Do not catch to re-raise or wrap. Log through `structlog.get_logger()` with an event name and keyword fields (`log.info("job_failed", task=name, attempt=n)`), never `logging.getLogger` with `%s` formatting. Use `log.exception(...)` for tracebacks. Never format error chains into strings.
+
+No `assert` in app code: `python -O` strips it. Narrow types with an explicit check or a better type, and enable ruff `S101` outside tests.
+
 ## Documentation
 
-Write Google-style docstrings for public APIs or behavior whose contract is not obvious from its signature.
+No docstrings or comments by default. If the repository requires docstrings, match its existing style.
 
-```python
-def fetch_user(user_id: int, *, include_inactive: bool = False) -> dict[str, object] | None:
-    """Retrieve a user by ID.
-
-    Args:
-        user_id: Unique user identifier.
-        include_inactive: Whether to include a deleted user.
-
-    Returns:
-        User data, or None when no matching user exists.
-
-    Raises:
-        PermissionError: The caller lacks read access.
-    """
-```
-
-Keep comments rare. Explain a constraint or reason, not the operation on the next line.
-
-Before completing Python work, verify every changed signature is typed, module constants cannot be mutated, public contracts use Google-style docstrings where needed, and each comment explains why.
+Before completing Python work, verify every changed signature is typed, constants live on their class and cannot be mutated, validation lives in pydantic, and no comment restates the code.
