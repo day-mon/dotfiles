@@ -1,84 +1,103 @@
 ---
 name: fastapi-http-clients
-description: Patterns for async outbound HTTP clients in a FastAPI service — an aiohttp + aiohttp-retry client class with ExponentialRetry, a timeout, raise_for_status, an async close() for lifespan teardown, and Pydantic model_validate response parsing including camelCase alias generators. Use when integrating a third-party API or building a typed async HTTP client.
+description: Patterns for async outbound HTTP clients in a FastAPI service — an aiohttp + aiohttp-retry client class with ExponentialRetry, a timeout, raise_for_status, create()/aclose() and async-context-manager lifecycle opened in the lifespan, and Pydantic response parsing including camelCase alias generators. Use when integrating a third-party API or building a typed async HTTP client.
 ---
 
 # FastAPI outbound HTTP clients
 
-Wrap each upstream API in a small class that owns a retrying `aiohttp` session and parses
-responses into Pydantic models. Construct it in the lifespan; close it on shutdown.
+Check for an official SDK first and wrap it if one exists. Otherwise, one class per upstream API
+owns a retrying `aiohttp` session and parses responses into Pydantic models. The full class
+shape (`_request`, `TypeAdapter`, request logging) lives in
+`codebase-design/references/python/library-choices.md`; this skill covers the FastAPI wiring.
 
 ## Client class
 
 ```python
+from typing import ClassVar, Self
+
 import aiohttp
 from aiohttp_retry import ExponentialRetry, RetryClient
-from myapp.clients.actionnetwork import types
+
+from myapp.clients.actionnetwork import schemas
+from myapp.core.config.actionnetwork import ActionNetworkSettings
+
 
 class ActionNetworkClient:
-    """Client for the ActionNetwork odds API."""
+    TIMEOUT_SECONDS: ClassVar[float] = 30
+    RETRY_ATTEMPTS: ClassVar[int] = 3
 
-    _BASE_URL = "https://api.actionnetwork.com"
-
-    def __init__(self) -> None:
-        self._session = RetryClient(
-            base_url=self._BASE_URL,
-            timeout=aiohttp.ClientTimeout(total=30),
-            raise_for_status=True,
-            retry_options=ExponentialRetry(attempts=3),
+    def __init__(self, *, base_url: str) -> None:
+        self.session = RetryClient(
+            client_session=aiohttp.ClientSession(
+                base_url=base_url,
+                timeout=aiohttp.ClientTimeout(total=self.TIMEOUT_SECONDS),
+                raise_for_status=True,
+            ),
+            retry_options=ExponentialRetry(attempts=self.RETRY_ATTEMPTS),
         )
 
-    async def close(self) -> None:
-        await self._session.close()
+    @classmethod
+    def create(cls, settings: ActionNetworkSettings) -> Self:
+        return cls(base_url=settings.base_url)
 
-    async def fetch_odds(self, date: str) -> types.ActionNetworkResponse:
-        async with self._session.get(
-            url="/web/v1/scoreboard/nba",
+    async def aclose(self) -> None:
+        await self.session.close()
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        await self.aclose()
+
+    async def fetch_odds(self, *, date: str) -> schemas.ScoreboardResponse:
+        async with self.session.get(
+            "/web/v1/scoreboard/nba",
             params={"period": "game", "date": date},
-        ) as resp:
-            data = await resp.json()
-        return types.ActionNetworkResponse.model_validate(data)
+        ) as response:
+            data = await response.json()
+        return schemas.ScoreboardResponse.model_validate(data)
 ```
 
-- `RetryClient` with `ExponentialRetry(attempts=3)` and a total timeout.
-- `raise_for_status=True` so 4xx/5xx raise `aiohttp.ClientResponseError` — caught centrally by
-  the handler in `fastapi-app-composition` (map to a `424`).
-- `async close()` is awaited in the lifespan teardown.
-- Parse with `Model.model_validate(...)`; return a typed model, never a raw dict.
+- Constants are `ClassVar`s; no bare numbers in the constructor.
+- `raise_for_status=True`, so 4xx/5xx raise `aiohttp.ClientResponseError`, which the central
+  handler in `fastapi-app-composition` maps to a `424`.
+- Construction from settings is `create()`; teardown is `aclose()` via `async with`.
+- Return a typed model, never a raw dict.
 
 ## Typed responses
 
-Define response models in a sibling `types.py`. When the upstream uses camelCase, give the
-models a base that maps to snake_case via an alias generator.
+Response models live in the client's `schemas.py`. For camelCase upstreams, use a base with an
+alias generator.
 
 ```python
 import pydantic
 from pydantic.alias_generators import to_camel
 
-class _CamelModel(pydantic.BaseModel):
-    """Accepts camelCase from the API; uses snake_case internally."""
+
+class CamelModel(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
-class Team(_CamelModel):
+
+class Team(CamelModel):
     team_id: int
     team_name: str
 
-class ActionNetworkResponse(pydantic.BaseModel):
+
+class ScoreboardResponse(CamelModel):
     games: list[Team]
 ```
 
 ## Lifecycle wiring
 
-Create clients once in the lifespan, pass them into the services that use them, and close them on
-shutdown (see `fastapi-app-composition`):
+Open clients in the lifespan's single `async with`, so they close even when startup fails
+partway (see `fastapi-app-composition`).
 
 ```python
 @contextlib.asynccontextmanager
-async def lifecycle(app):
-    client = ActionNetworkClient()
-    app.state.odds_service = OddsService(client=client)
-    yield
-    await client.close()
+async def lifecycle(app: fastapi.FastAPI) -> AsyncIterator[None]:
+    async with ActionNetworkClient.create(actionnetwork_settings) as odds:
+        app.state.odds_service = OddsService(client=odds)
+        yield
 ```
 
 A service can fan out concurrent calls with `asyncio.gather`:
@@ -89,10 +108,10 @@ games, odds = await asyncio.gather(self._fetch_games(), self._fetch_odds())
 
 ## Rules
 
+- Official SDK first; hand-written client only when none exists.
 - One client class per upstream API; it owns a single `RetryClient` for its lifetime.
-- Configure `ExponentialRetry`, a `ClientTimeout`, and `raise_for_status=True`.
-- Expose `async close()` and call it in the lifespan teardown — don't leak sessions.
-- Parse every response with a Pydantic model (`model_validate`); keep models in `types.py`.
-- For camelCase upstreams, use a `_CamelModel` base with `alias_generator=to_camel` +
-  `populate_by_name=True`.
-- Let `ClientResponseError` propagate to the central error handler; don't swallow upstream errors.
+- `ExponentialRetry`, a `ClientTimeout`, and `raise_for_status=True`; constants are `ClassVar`s.
+- `create(settings)` builds it; `async with` in the lifespan closes it.
+- Parse every response with a Pydantic model in the client's `schemas.py`.
+- camelCase upstreams use a `CamelModel` base with `alias_generator=to_camel`.
+- Let `ClientResponseError` propagate to the central handler; don't catch or wrap it.

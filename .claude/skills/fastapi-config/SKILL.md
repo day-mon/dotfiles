@@ -50,8 +50,10 @@ core/config/
 ```
 
 A subclass's `model_config` merges with `BaseConfig`'s, so each file sets only its
-`env_prefix`. Import the instance (`from app.core.config.glean import glean_settings`);
-don't thread settings through `create_app(settings)` or a `SettingsDep`.
+`env_prefix`. The composition root (lifespan, worker entrypoint) imports the instance
+(`from app.core.config.glean import glean_settings`) and passes it to `GleanClient.create(...)`.
+Services and clients receive settings and never import them; tests construct `Settings(...)`
+and pass it in. Don't thread settings through `create_app(settings)` or a `SettingsDep`.
 
 Keep features in one class when they're cross-validated: disabled|live unions whose
 validator spans several of them ("synthesis needs live Jira and conversations") stay
@@ -59,15 +61,26 @@ nested under one `Settings(AppSettings)`.
 
 ## Secrets
 
-Expose a property that unwraps the secret or raises, so callers never handle
-`Optional[SecretStr]`:
+A required secret has no default, so a missing env var fails at import, before the app starts.
+When a secret is required only in one mode, check it in a `model_validator` so it still fails at
+startup, then unwrap it in a property so callers never handle `SecretStr | None`:
 
 ```python
-@property
-def token(self) -> str:
-    if self.api_token is None:
-        raise ValueError("live sources require GLEAN_API_TOKEN")
-    return self.api_token.get_secret_value()
+class GleanSettings(Settings):
+    mode: typing.Literal["fixture", "live"] = "fixture"
+    api_token: pydantic.SecretStr | None = None
+
+    @pydantic.model_validator(mode="after")
+    def _live_needs_token(self) -> typing.Self:
+        if self.mode == "live" and self.api_token is None:
+            raise ValueError("GLEAN_MODE=live requires GLEAN_API_TOKEN")
+        return self
+
+    @property
+    def token(self) -> str:
+        if self.api_token is None:
+            raise RuntimeError("token read in fixture mode")
+        return self.api_token.get_secret_value()
 ```
 
 ## Literal enums, properties, validators
@@ -91,9 +104,9 @@ class AppSettings(Settings):
         return self.log_type == "json"
 
     @pydantic.model_validator(mode="after")
-    def _no_reload_in_prod(self) -> "AppSettings":
-        if self.environment == "production" and self.reload:
-            raise ValueError("reload cannot be enabled in production")
+    def _json_logs_in_prod(self) -> typing.Self:
+        if self.environment == "production" and self.log_type != "json":
+            raise ValueError("production requires MYAPP_LOG_TYPE=json")
         return self
 ```
 
@@ -153,6 +166,7 @@ the engine in `fastapi-sqlalchemy`.
   module-level instance.
 - Base config sets `env_ignore_empty=True`.
 - Cross-validated feature unions stay in one class.
+- Missing secrets fail at startup: required field, or a `model_validator` for mode-specific ones.
 - Secrets reach callers through an unwrapping property, never `.get_secret_value()`
   scattered at call sites.
 - `Literal` for enumerated options; `@property` for anything derived.

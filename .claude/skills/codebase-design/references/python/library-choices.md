@@ -23,16 +23,16 @@ One class per external API. Every operation funnels through a single private `_r
 ```python
 from __future__ import annotations
 
-import logging
 from typing import Any, ClassVar, Literal, Self, TypeVar
 
 import aiohttp
+import structlog
 from aiohttp.client import _RequestOptions
 from aiohttp_retry import ExponentialRetry, RetryClient
 from pydantic import TypeAdapter
 from typing_extensions import Unpack
 
-log = logging.getLogger(__name__)
+log = structlog.get_logger()
 
 T = TypeVar("T")
 
@@ -76,7 +76,12 @@ class WidgetsClient:
             _ctx: Any,
             params: aiohttp.TraceRequestEndParams,
         ) -> None:
-            log.info("http %s %s -> %s", params.method, params.url, params.response.status)
+            log.info(
+                "http_request",
+                method=params.method,
+                url=str(params.url),
+                status=params.response.status,
+            )
 
         trace.on_request_end.append(on_request_end)
         return trace
@@ -153,5 +158,6 @@ Rules for this shape:
 - Required values have no default, so a missing env var fails at startup.
 - Let pydantic coerce types (`int`, `Path`, `Literal`). Never `int(os.environ.get(...) or default)`.
 - Derived values are `@property`s, never stored fields.
-- Define `settings: Final = Settings()` at module level. Do not use `@lru_cache def get_settings()`. Tests override by constructing `Settings(...)` and injecting it.
-- Libraries never construct settings; they receive the object.
+- Define `settings: Final = Settings()` at module level. Do not use `@lru_cache def get_settings()`.
+- Only the composition root (lifespan, worker entrypoint) imports the instance and passes it to `create(settings)`. Services, clients, and libraries receive settings; they never import them.
+- Tests construct `Settings(...)` and pass it to `create()`; no monkeypatching the module instance.

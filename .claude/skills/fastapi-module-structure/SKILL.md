@@ -1,6 +1,6 @@
 ---
 name: fastapi-module-structure
-description: The vertical-slice module layout for FastAPI services — api/v<n>/<domain>/ split into routes.py, schemas.py, service.py, types.py, constants.py, __init__.py — with thin route controllers delegating to service classes and two-level router aggregation. Use when scaffolding a new FastAPI API domain or organizing endpoints, services, schemas, and internal types.
+description: The vertical-slice module layout for FastAPI services — api/v<n>/<domain>/ split into routes.py, schemas.py, service.py, errors.py, types.py, __init__.py — with thin route controllers delegating to service classes and two-level router aggregation. Use when scaffolding a new FastAPI API domain or organizing endpoints, services, schemas, and internal types.
 ---
 
 # FastAPI module structure
@@ -20,8 +20,8 @@ api/
         ├── routes.py      # APIRouter + path operations (HTTP layer)
         ├── schemas.py     # public Pydantic request/response models
         ├── service.py     # business logic (a stateful class)
-        ├── types.py       # internal dataclasses / TypedDicts (never serialized)
-        └── constants.py   # domain lookup tables / constants (optional)
+        ├── errors.py      # AppError subclasses for this domain
+        └── types.py       # internal dataclasses (never serialized)
 ```
 
 Not every domain needs every file. A trivial `health` domain may be just `routes.py` +
@@ -35,37 +35,48 @@ Not every domain needs every file. A trivial `health` domain may be just `routes
   fields only.
 - **service.py** — a class holding injected dependencies (session, clients) with `async`
   methods that do the work.
-- **types.py** — internal working types (`@dataclass`, `TypedDict`) used between the service and
-  external sources. Never returned directly over HTTP.
-- **constants.py** — domain-local constants (lookup maps, skip lists). Keep them colocated, not
-  in a global module.
+- **errors.py** — `AppError` subclasses (`PredictionNotFoundError`, status 404). The service
+  raises them; the global handler maps them. Routes never catch.
+- **types.py** — internal working types (`@dataclass`) used inside the service. Never returned
+  directly over HTTP.
+
+Constants are `ClassVar`s on the class that owns them (see `coding-standards`). A domain-level
+`constants.py` exists only when several classes in the domain share the same values.
 
 ### schemas.py vs types.py
 
-`schemas.py` is the API boundary; `types.py` is internal. The service transforms external/DB
-data into `types.py`, then converts to `schemas.py` at the HTTP edge. This decouples the wire
-format from internal logic.
+`schemas.py` is the API boundary; `types.py` is internal. Upstream payloads are parsed by the
+client's pydantic models (see `fastapi-http-clients`), never by indexing dicts. The service maps
+them into `types.py`, then converts to `schemas.py` at the HTTP edge. Each conversion is a method
+on the type that owns the data.
 
 ```python
-# types.py — internal, with factory methods
+# types.py — internal
 import dataclasses
 
-@dataclasses.dataclass(slots=True)
-class RawGame:
+from myapp.api.v1.games import schemas
+from myapp.clients.scores import schemas as upstream
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+class Game:
     home: str
     away: str
 
     @classmethod
-    def from_upstream(cls, payload: dict) -> "RawGame":
-        return cls(home=payload["h"], away=payload["a"])
+    def of(cls, raw: upstream.ScoreboardGame) -> "Game":
+        return cls(home=raw.home_team, away=raw.away_team)
+
+    def to_out(self) -> schemas.GameOut:
+        return schemas.GameOut(home_team=self.home, away_team=self.away)
 ```
 
 ```python
 # schemas.py — public contract
 import pydantic
 
+
 class GameOut(pydantic.BaseModel):
-    """A game as returned by the API."""
     home_team: str
     away_team: str
 ```
@@ -135,8 +146,10 @@ The app includes the version router (see `fastapi-app-composition`).
 
 ## Rules
 
-- One directory per domain under `api/v<n>/`; keep routes, schemas, service, and types separate.
-- `schemas.py` = Pydantic HTTP contracts; `types.py` = internal dataclasses/TypedDicts. Never
+- One directory per domain under `api/v<n>/`; keep routes, schemas, service, errors, and types
+  separate. Create only the files the domain needs.
+- Constants are `ClassVar`s on their owner; `constants.py` only for values several classes share.
+- `schemas.py` = Pydantic HTTP contracts; `types.py` = internal dataclasses. Never
   return a `types.py` object straight to the client unless it matches a declared schema.
 - Routes are thin: extract params, call the service, return.
 - Services are classes that receive dependencies via injection — not module-level globals.

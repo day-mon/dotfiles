@@ -18,7 +18,7 @@ import sqlalchemy.orm
 from myapp.models import mixins
 
 class Base(sqlalchemy.orm.DeclarativeBase):
-    """Base class for declarative models."""
+    pass
 
 class GameResult(Base, mixins.IDMixin, mixins.TimestampMixin, mixins.CRUDMixin):
     __tablename__ = "game_results"
@@ -58,9 +58,15 @@ class UUIDPKMixin:
 ```python
 # timestamp.py
 class TimestampMixin:
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        server_default=sqlalchemy.func.now(),
+    )
     updated_at: Mapped[datetime.datetime] = mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        server_default=sqlalchemy.func.now(),
+        onupdate=sqlalchemy.func.now(),
         index=True,
-        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
 ```
 
@@ -151,6 +157,8 @@ The `connection_url` comes from the discriminated-union DB settings in `fastapi-
 
 - Type every column as `Mapped[...]` with `mapped_column(...)`; `Literal` for enums.
 - Compose models from `Base` + mixins; don't redefine `id`/timestamps per model.
+- Every non-nullable column has a value on INSERT: a `server_default`, a `default`, or a
+  required constructor argument. Timestamps are `DateTime(timezone=True)` set by the database.
 - Use async sessions only; relationships use `lazy="selectin"`.
 - One engine + one `async_sessionmaker` for the app, stored on `app.state.db`.
 - One session per request via the `get_session` yield dependency; never share sessions.

@@ -73,8 +73,9 @@ async def lifecycle(app: fastapi.FastAPI) -> typing.AsyncGenerator[None, None]:
 ```
 
 One parenthesized `async with` opens resources in dependency order and closes them in
-reverse; no `AsyncExitStack`. Each client builds itself with
-`@classmethod @asynccontextmanager def create(cls, config)`. Build everything here, not
+reverse; no `AsyncExitStack`. Each client builds itself with a `create(settings)` classmethod
+returning `Self` and closes in `__aexit__` (see `fastapi-http-clients`). The lifespan is the
+composition root: it imports the settings instances and passes them to `create()`. Build everything here, not
 lazily, so a bad credential fails startup instead of the first request. Pick fixture vs
 live implementations here too, so no route ever checks for `None`.
 
@@ -102,7 +103,8 @@ def _error_response(
     return JSONResponse(status_code=status_code, content=payload)
 
 def register(app: fastapi.FastAPI) -> None:
-    app.add_exception_handler(SomeUpstreamError, handle_upstream_error)
+    app.add_exception_handler(AppError, handle_app_error)
+    app.add_exception_handler(aiohttp.ClientResponseError, handle_upstream_error)
     app.add_exception_handler(RequestValidationError, handle_validation_error)
     app.add_exception_handler(Exception, handle_general_exception)
 ```
