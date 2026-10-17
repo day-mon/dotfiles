@@ -5,6 +5,8 @@ description: Coding standards. Use whenever you are writing source code or revie
 
 # Coding standards
 
+Rule owners, precedence, and principles are indexed in `damon-mode`. When this skill and another disagree, follow its conflict rulings.
+
 ## Process
 
 1. Classify every source file being written or reviewed. This step is complete when each file maps to every applicable branch below.

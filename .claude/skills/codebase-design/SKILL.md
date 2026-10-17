@@ -9,6 +9,8 @@ Recommend the smallest structural change that creates an earned boundary.
 
 An **earned boundary** exists because code has a different runtime, dependency direction, responsibility, ownership, or reason to change — not because a template says so.
 
+Rule owners, precedence, and principles are indexed in `damon-mode`. When this skill and another disagree, follow its conflict rulings.
+
 ## Workflow
 
 ### 0. Ground rules
