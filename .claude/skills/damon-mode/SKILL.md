@@ -1,11 +1,29 @@
 ---
 name: damon-mode
-description: Index and precedence rules for Damon's engineering skills. Read first on any coding, design, review, debugging, refactoring, or skill-editing task to find which skill owns the rule, which principle applies, and how conflicts between skills resolve.
+description: Required first read for any coding, design, review, debugging, refactoring, or skill-editing task in Damon's stack. Lists which skills to read for each task, which skill owns each rule, and how conflicts between skills resolve.
 ---
 
 # Damon mode
 
 This file routes. The skills it names own the details; read the owner before applying or quoting a rule. Skills live at `../<name>/SKILL.md` from this file.
+
+## Read before you start
+
+Before writing any file, read every skill in each row that matches the task. Read all of them, not just the ones that match your plan. Then name them in your reply.
+
+| Task | Read |
+|---|---|
+| Any code | `coding-standards` + its language reference, `principle-foundational-thinking`, `principle-laziness-protocol`, `principle-prove-it-works` |
+| Adding or changing files, folders, services | `codebase-design`, `codebase-design/references/feature-structure.md` |
+| New or changed endpoint | `fastapi-routing`, `fastapi-dependencies`, `fastapi-module-structure` |
+| New FastAPI app, lifespan, middleware, error handling | `fastapi-app-composition`, `fastapi-app-composition/references/logging.md` |
+| Calling an external API | `fastapi-http-clients`, `codebase-design/references/python/library-choices.md`, `principle-boundary-discipline` |
+| Settings or env vars | `fastapi-config` |
+| Database models or queries | `fastapi-sqlalchemy`, `fastapi-alembic` |
+| Scheduled, background, or retried work | `fastapi-background-tasks`, `principle-make-operations-idempotent` |
+| Tests | `coding-standards/references/testing.md`, `principle-test-behavior-not-implementation` |
+| Debugging | `principle-fix-root-causes`, `principle-attack-the-premise` |
+| Editing a skill | this file's "Keeping skills consistent" section |
 
 ## Precedence
 
