@@ -13,7 +13,7 @@ Before writing any file, read every skill in each row that matches the task. Rea
 
 | Task | Read |
 |---|---|
-| Any code | `coding-standards` + its language reference, `principle-foundational-thinking`, `principle-laziness-protocol`, `principle-prove-it-works` |
+| Any code | `coding-standards` + its language reference, `principle-subtract-before-you-add`, `principle-foundational-thinking`, `principle-laziness-protocol`, `principle-prove-it-works` |
 | Adding or changing files, folders, services | `codebase-design`, `codebase-design/references/feature-structure.md` |
 | New or changed endpoint | `fastapi-routing`, `fastapi-dependencies`, `fastapi-module-structure` |
 | New FastAPI app, lifespan, middleware, error handling | `fastapi-app-composition`, `fastapi-app-composition/references/logging.md` |
@@ -64,6 +64,8 @@ Each rule lives in one file. Every other file links to it. To change a rule, edi
 
 ## Conflict rulings
 
+- **Subtract first, then abstract only if it deletes.** Every change starts with `principle-subtract-before-you-add`: remove or consolidate, then add. Make an abstraction when it removes duplication or invalid states (the abstraction plus its callers is smaller than the copies). Otherwise `principle-laziness-protocol` wins and you write the plain code.
+
 - **Asking vs proceeding.** Proceed on reversible work (`principle-never-block-on-the-human`). Confirm first before moving or deleting files in a restructure, schema migrations, force pushes, and external messages. `codebase-design` step 0 stands: show the target tree, then wait.
 - **Refactor vs rewrite.** A structural refactor moves code in behavior-preserving steps (`codebase-design/references/service-splitting.md`). A planned rewrite with phase boundaries may break intermediate states (`principle-outcome-oriented-execution`). Neither leaves compatibility shims behind (`principle-migrate-callers-then-delete-legacy-apis`).
 - **One default vs prototypes.** Use the documented default for each concern. Prototype competing designs only for a decision no skill covers yet, then record the winner in its owner.
@@ -83,7 +85,7 @@ Read the leaf in full before citing it.
 
 **While changing code**
 - `principle-laziness-protocol`: tempted to add an abstraction or layer.
-- `principle-subtract-before-you-add`: sequencing an addition or refactor.
+- `principle-subtract-before-you-add`: every change, before adding anything (required, see the read table).
 - `principle-minimize-reader-load`: code that is hard to trace.
 - `principle-migrate-callers-then-delete-legacy-apis`: replacing an internal API.
 - `principle-outcome-oriented-execution`: planned rewrites with phase boundaries.
