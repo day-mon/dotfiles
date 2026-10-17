@@ -45,6 +45,7 @@ class SkillLint:
         (re.compile(r"onUnhandledRequest"), "MSW 2 option; use onUnhandledFrame"),
         (re.compile(r"\b(test|describe)\.sequential\b"), "removed in Vitest 5; use { concurrent: false }"),
         (re.compile(r"__async_persistence__"), "not a polyfactory option; bind __async_session__"),
+        (re.compile(r"\bprefixUrl\b"), "removed in ky 2; use baseUrl"),
     )
     PYTHON_BLOCK: ClassVar = re.compile(r"```python\n(.*?)```", re.S)
     ANY_BLOCK: ClassVar = re.compile(r"```[a-z]*\n(.*?)```", re.S)

@@ -31,7 +31,7 @@ export class LatticeClient {
   static create({ apiKey }: { apiKey: string }): LatticeClient {
     return new LatticeClient(
       ky.create({
-        prefixUrl: LatticeClient.BASE_URL,
+        baseUrl: LatticeClient.BASE_URL,
         timeout: LatticeClient.TIMEOUT_MS,
         headers: { authorization: `Bearer ${apiKey}` },
         retry: { limit: 3 },
@@ -45,6 +45,7 @@ export class LatticeClient {
 }
 ```
 
+- ky 2: `baseUrl` (resolved like `new URL(input, baseUrl)`), not the removed `prefixUrl`.
 - Constants are `private static readonly`.
 - Construction goes through `static create()`.
 - Responses are parsed with zod at the client boundary.

@@ -45,16 +45,32 @@ Browser Mode needs `@vitest/browser-playwright` and `vitest-browser-react` as de
 
 ## Layout
 
+Vitest has no `conftest.py`; the same job is split across three files.
+
+| pytest | Vitest |
+|---|---|
+| root `conftest.py` fixtures | `tests/fixtures.ts`: one extended `test` every file imports |
+| nested `tests/<area>/conftest.py` | `tests/<area>/fixtures.ts`: extends the root `test` |
+| autouse session setup (MSW server) | `tests/setup.ts`, listed in `setupFiles` |
+
 ```text
 tests/
-├── setup.ts            msw server lifecycle
-├── fixtures.ts         the extended `test` with shared fixtures
-├── factories.ts        fishery factories
-├── mocks/handlers.ts   default msw handlers
-└── weather/get-weather.test.ts
+├── setup.ts                 msw server lifecycle (setupFiles)
+├── fixtures.ts              root `test`: settings, clients, services, app
+├── factories.ts             fishery factories
+├── mocks/
+│   ├── handlers.ts          default msw handlers + upstream URLs
+│   └── server.ts            `setupServer(...handlers)`, imported by setup and tests
+├── clients/open-meteo.test.ts
+└── weather/
+    ├── fixtures.ts          area `test`: extends root with weather-only fixtures
+    ├── routes.test.ts
+    └── service.test.ts
 ```
 
-Tests mirror `src/` and live in `tests/` (see `typescript.md`). Name tests after the behavior: `test("returns 404 for an unknown city")`.
+- Tests mirror `src/` and live in `tests/` (see `typescript.md`). Name tests after the behavior: `test("returns 404 for an unknown city")`.
+- A test file that uses fixtures imports `test` from the nearest `fixtures.ts`; `describe` and `expect` still come from `vitest`. Only a file of pure-function tests with no fixtures imports `test` from `vitest`.
+- A fixture lives in `fixtures.ts`, not the test file. Area fixtures go in that area's `fixtures.ts`, which extends the root one.
 
 ## Plain tests and exact assertions
 
@@ -75,18 +91,71 @@ test("converts celsius to fahrenheit", () => {
 
 ## Fixtures with `test.extend`
 
-Shared setup is a fixture, not a `let` assigned in `beforeEach`. Use the builder form; it infers types and registers cleanup with `onCleanup`.
+Shared setup is a fixture, not a `let` assigned in `beforeEach`. Use the builder form; it infers types and registers cleanup with `onCleanup`. Each fixture builds on the ones above it, like pytest fixtures requesting each other.
 
 ```ts
+// tests/fixtures.ts
+import type { Hono } from "hono";
 import { test as base } from "vitest";
+import { createApp } from "../src/app";
+import { OpenMeteoClient } from "../src/clients/open-meteo/client";
+import { WeatherService } from "../src/weather/service";
+import { SettingsFactory } from "./factories";
 
 export const test = base
   .extend("settings", () => SettingsFactory.build())
-  .extend("weather", ({ settings }, { onCleanup }) => {
-    const service = new WeatherService(OpenMeteoClient.create(settings));
-    onCleanup(() => service.close());
-    return service;
-  })
+  .extend("openMeteo", ({ settings }) => OpenMeteoClient.create(settings))
+  .extend("weather", ({ openMeteo }) => new WeatherService(openMeteo))
+  .extend("app", ({ weather }): Hono => createApp({ weather }));
+```
+
+```ts
+// tests/weather/fixtures.ts
+import { test as base } from "../fixtures";
+
+export const test = base.extend("trackedWeather", async ({ weather, settings }) => {
+  await weather.refreshTracked(settings.trackedCities);
+  return weather;
+});
+```
+
+```ts
+// tests/weather/service.test.ts
+import { HttpResponse, http } from "msw/http";
+import { describe, expect } from "vitest";
+import { CityNotFoundError } from "../../src/platform/errors";
+import { SettingsFactory } from "../factories";
+import { GEOCODING_URL } from "../mocks/handlers";
+import { server } from "../mocks/server";
+import { test } from "./fixtures";
+
+test("caches the tracked cities", async ({ trackedWeather }) => {
+  expect(trackedWeather.trackedCities()).toStrictEqual(["Berlin"]);
+});
+
+test("serves a tracked city without geocoding it again", async ({ trackedWeather }) => {
+  server.use(http.get(GEOCODING_URL, () => HttpResponse.error()));
+
+  await expect(trackedWeather.currentTemperature("berlin")).resolves.toMatchObject({ city: "Berlin" });
+});
+
+test("rejects an unknown city", async ({ weather }) => {
+  await expect(weather.currentTemperature("Atlantis")).rejects.toBeInstanceOf(CityNotFoundError);
+});
+
+describe("with two tracked cities", () => {
+  test.override("settings", () => SettingsFactory.build({ trackedCities: ["Berlin", "Tokyo"] }));
+
+  test("refreshes every tracked city from settings", async ({ trackedWeather }) => {
+    expect(trackedWeather.trackedCities()).toStrictEqual(["Berlin", "Tokyo"]);
+  });
+});
+```
+
+Fixtures that hold resources register cleanup:
+
+```ts
+export const test = base
   .extend("db", { scope: "file" }, async ({}, { onCleanup }) => {
     const db = await createTestDatabase();
     onCleanup(() => db.close());
@@ -102,32 +171,22 @@ export const test = base
   });
 ```
 
-```ts
-import { expect } from "vitest";
-import { test } from "../fixtures";
-
-test("caches tracked cities", async ({ weather }) => {
-  await weather.refreshTracked(["Berlin"]);
-
-  expect(weather.cachedCities()).toStrictEqual(["Berlin"]);
-});
-```
-
 - Fixtures are lazy: a test only builds what it destructures. Always destructure (`{ weather }`), never `(context) => context.weather`.
 - A fixture with no dependencies still destructures: `({}, { onCleanup })`. Vitest rejects `(_, { onCleanup })` with a `FixtureParseError`.
 - `onCleanup` callbacks return `void` or a promise. Wrap a call that returns something else in a block body, or `tsc` fails.
 - Scope: test (default) for anything mutable, `file` or `worker` for expensive and immutable.
-- Override per suite with `test.override("settings", ...)`, not by mutating a fixture. `test.scoped` is deprecated.
+- Override a fixture with `test.override(...)` **inside a `describe`**. At the top level of a file it applies to every test in the file, including the ones above it. `test.scoped` is deprecated.
 - Suite hooks that need fixtures are `test.beforeAll`, not the global `beforeAll`.
 
 ## Parameterize with `test.for`
 
 ```ts
 test.for([
-  { input: "Berlin", status: 200 },
-  { input: "Atlantis", status: 404 },
-])("GET /weather/$input returns $status", async ({ input, status }, { api }) => {
-  const response = await api.get(`/weather/${input}`);
+  { city: "Berlin", status: 200 },
+  { city: "Tokyo", status: 200 },
+  { city: "Atlantis", status: 404 },
+])("$city returns $status", async ({ city, status }, { app }) => {
+  const response = await app.request(`/v1/weather/${city}`);
 
   expect(response.status).toBe(status);
 });
@@ -137,15 +196,20 @@ test.for([
 
 ## HTTP with MSW 3
 
-Mock the network, not `fetch` or your client.
+Mock the network, not `fetch` or your client. Keep the server in its own module so `setup.ts` and tests share one instance.
+
+```ts
+// tests/mocks/server.ts
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+```
 
 ```ts
 // tests/setup.ts
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { setupServer } from "msw/node";
-import { handlers } from "./mocks/handlers";
-
-export const server = setupServer(...handlers);
+import { server } from "./mocks/server";
 
 beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => server.resetHandlers());
@@ -153,17 +217,26 @@ afterAll(() => server.close());
 ```
 
 ```ts
-import { http, HttpResponse } from "msw/http";
+// tests/weather/routes.test.ts
+import { HttpResponse, http } from "msw/http";
+import { describe, expect } from "vitest";
+import { test } from "../fixtures";
+import { FORECAST_URL } from "../mocks/handlers";
+import { server } from "../mocks/server";
 
-test("returns 424 when the upstream is down", async ({ api }) => {
-  server.use(http.get("https://api.open-meteo.com/v1/forecast", () => new HttpResponse(null, { status: 503 })));
+describe("GET /v1/weather/:city", () => {
+  test("returns 424 when the forecast upstream fails", async ({ app }) => {
+    server.use(http.get(FORECAST_URL, () => new HttpResponse(null, { status: 503 })));
 
-  const response = await api.get("/weather/Berlin");
+    const response = await app.request("/v1/weather/Berlin");
 
-  expect(response.status).toBe(424);
+    expect(response.status).toBe(424);
+  });
 });
 ```
 
+- Test HTTP apps without a server: Hono's `app.request(path)` returns a `Response`.
+- Put upstream URLs in `tests/mocks/handlers.ts` and build settings from them in the factory, so handlers and the client can't disagree.
 - MSW 3 imports: `http`/`HttpResponse` from `msw/http`, `setupServer` from `msw/node`, `delay` from `msw/utils/delay`.
 - `onUnhandledFrame: "error"` so a request nobody mocked fails the test.
 - Per-test responses go through `server.use(...)`; `resetHandlers` undoes them.
@@ -228,4 +301,4 @@ test("shows the temperature for a city", async () => {
 
 ## Before finishing
 
-Every test imports from `vitest`, has a behavior name and no branches, uses fixtures instead of `beforeEach` lets, mocks HTTP with MSW, awaits every async assertion, and passes `vitest run`.
+Every test that needs setup imports `test` from the nearest `fixtures.ts`, has a behavior name and no branches, gets setup from fixtures instead of `beforeEach` lets, mocks HTTP with MSW, awaits every async assertion, and passes `vitest run` and `tsc --noEmit`.
