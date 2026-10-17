@@ -37,7 +37,17 @@ class SkillLint:
         (re.compile(r"logging\.getLogger\(__name__\)"), "stdlib logger in app code; use structlog"),
         (re.compile(r"\blog\w*\.\w+\(\s*\"[^\"]*%s"), "%s-formatted log; use an event name and fields"),
     )
+    BANNED_IN_ANY_CODE: ClassVar = (
+        (re.compile(r"\[tool\.pytest\.ini_options\]"), "INI-compat pytest table; use [tool.pytest]"),
+        (re.compile(r"from testcontainers\.postgres import"), "deprecated path; use testcontainers.community.postgres"),
+        (re.compile(r"unittest\.TestCase|self\.assert[A-Z]"), "unittest style; use plain pytest functions and assert"),
+        (re.compile(r"import \{[^}]*\b(http|HttpResponse)\b[^}]*\} from [\"']msw[\"']"), "MSW 2 import; use msw/http"),
+        (re.compile(r"onUnhandledRequest"), "MSW 2 option; use onUnhandledFrame"),
+        (re.compile(r"\b(test|describe)\.sequential\b"), "removed in Vitest 5; use { concurrent: false }"),
+        (re.compile(r"__async_persistence__"), "not a polyfactory option; bind __async_session__"),
+    )
     PYTHON_BLOCK: ClassVar = re.compile(r"```python\n(.*?)```", re.S)
+    ANY_BLOCK: ClassVar = re.compile(r"```[a-z]*\n(.*?)```", re.S)
     SKILL_TOKEN: ClassVar = re.compile(r"`((?:principle|fastapi)-[a-z-]+[a-z])(?:/[^`]*)?`")
     BACKTICK_NAME: ClassVar = re.compile(r"`([a-z][a-z0-9-]+)`")
     RELATIVE_LINK: ClassVar = re.compile(r"\]\((\.\./[^)#\s]+)")
@@ -99,6 +109,12 @@ class SkillLint:
     def _check_code(self, skill: Path, doc: Path, text: str) -> list[Finding]:
         findings: list[Finding] = []
         rel = doc.relative_to(self.root).as_posix()
+        for idx, block in enumerate(self.ANY_BLOCK.findall(text)):
+            findings += [
+                Finding(doc, f"code block {idx}: {reason}")
+                for pattern, reason in self.BANNED_IN_ANY_CODE
+                if pattern.search(block)
+            ]
         for idx, block in enumerate(self.PYTHON_BLOCK.findall(text)):
             findings += [
                 Finding(doc, f"python block {idx}: {reason}")

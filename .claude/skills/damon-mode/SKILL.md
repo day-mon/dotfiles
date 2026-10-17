@@ -21,7 +21,8 @@ Before writing any file, read every skill in each row that matches the task. Rea
 | Settings or env vars | `fastapi-config` |
 | Database models or queries | `fastapi-sqlalchemy`, `fastapi-alembic` |
 | Scheduled, background, or retried work | `fastapi-background-tasks`, `principle-make-operations-idempotent` |
-| Tests | `coding-standards/references/testing.md`, `principle-test-behavior-not-implementation` |
+| Python tests | `coding-standards/references/testing.md`, `coding-standards/references/testing-pytest.md`, `principle-test-behavior-not-implementation` |
+| TypeScript or React tests | `coding-standards/references/testing.md`, `coding-standards/references/testing-vitest.md`, `principle-test-behavior-not-implementation` |
 | Debugging | `principle-fix-root-causes`, `principle-attack-the-premise` |
 | Editing a skill | this file's "Keeping skills consistent" section |
 
@@ -47,6 +48,8 @@ Each rule lives in one file. Every other file links to it. To change a rule, edi
 | Comments and docstrings, naming, guard clauses, errors, logging, constants as `ClassVar` | `coding-standards` |
 | Python specifics (types, `Literal`, `:=`, pydantic validation, no `assert`) | `coding-standards/references/python.md` |
 | Tests: factories, real database, fakes one layer up | `coding-standards/references/testing.md` |
+| pytest idioms (config, fixtures, parametrize, polyfactory, testcontainers) | `coding-standards/references/testing-pytest.md` |
+| Vitest idioms (`test.extend`, `test.for`, MSW 3, Browser Mode) | `coding-standards/references/testing-vitest.md` |
 | Structure levels, placement table, DI (`Depends` first, Dishka for workers/CLI) | `codebase-design` |
 | Library defaults (aiohttp, pydantic-settings, procrastinate, Dishka) and the client class shape | `codebase-design/references/python/library-choices.md` |
 | Settings, secrets, discriminated-union backends | `fastapi-config` |

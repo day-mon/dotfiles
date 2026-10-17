@@ -185,7 +185,7 @@ Run the repository's configured linter (oxlint or Biome). When none is configure
 bunx --bun @biomejs/biome check <changed files>
 ```
 
-Tests live in `tests/`, not next to source. Mock HTTP with `msw`.
+Tests live in `tests/`, not next to source. Mock HTTP with `msw`. Test rules: `testing-vitest.md`.
 
 Run the repository's type-check script when one exists. Otherwise run:
 

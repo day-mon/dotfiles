@@ -1,6 +1,6 @@
 # Testing
 
-Apply to tests in any language. Framework references override these rules.
+Apply to tests in any language. Framework references override these rules: `testing-pytest.md` for Python, `testing-vitest.md` for TypeScript and React.
 
 ## Test behavior that matters
 

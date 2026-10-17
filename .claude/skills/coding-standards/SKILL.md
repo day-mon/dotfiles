@@ -16,7 +16,7 @@ Rule owners, precedence, and principles are indexed in `damon-mode`. When this s
    - TypeScript source: `references/typescript.md`
    - React components or hooks: `references/react.md`, plus the TypeScript reference for `.ts` and `.tsx` files
    - Next.js 16.3+ with `cacheComponents: true`: `references/nextjs-cache-components.md`, plus the TypeScript and React references when applicable
-   - Tests in any language: `references/testing.md`
+   - Tests in any language: `references/testing.md`, plus `references/testing-pytest.md` (Python) or `references/testing-vitest.md` (TypeScript, React)
 3. Apply the universal rules below and every relevant rule from the loaded references. Framework rules override language rules, and language rules override universal rules. This step is complete when every relevant rule has been accounted for in the implementation or review.
 4. Run the repository's checks for changed code, including any validation required by the loaded references. This step is complete when checks pass or each blocked check is reported with its exact reason.
 
