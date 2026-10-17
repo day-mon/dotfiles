@@ -274,25 +274,132 @@ Types come from the zod schema (`z.infer`), so a factory that drifts from the co
 
 ## React components
 
-Run component tests in Browser Mode (a real browser), with `vitest-browser-react`.
+Run component tests in Browser Mode (a real browser), with `vitest-browser-react`. Give the browser project its own `tests/web/` folder: its own `fixtures.tsx`, MSW worker, and setup file.
 
-```tsx
-import { expect, test } from "vitest";
-import { render } from "vitest-browser-react";
+```text
+tests/web/
+├── fixtures.tsx        extends root `test`: api, queryClient, render helper
+├── setup.ts            msw worker lifecycle (browser project's setupFiles)
+├── mocks/handlers.ts   handlers for the app's own API
+├── mocks/worker.ts     `setupWorker(...handlers)` from `msw/browser`
+└── WeatherCard.test.tsx
+```
 
-test("shows the temperature for a city", async () => {
-  const screen = await render(<Weather city="Berlin" />);
+```ts
+// vitest.config.ts (browser project)
+import { msw } from "msw/vite";
 
-  await screen.getByRole("button", { name: "Refresh" }).click();
-
-  await expect.element(screen.getByRole("status")).toHaveTextContent("10.9 °C");
+export default defineConfig({
+  plugins: [react(), msw({ mode: "worker-only" })],
+  test: {
+    projects: [
+      {
+        test: {
+          name: "browser",
+          include: ["tests/**/*.test.tsx"],
+          setupFiles: ["tests/web/setup.ts"],
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" }] },
+        },
+      },
+    ],
+  },
 });
 ```
 
+```ts
+// tests/web/setup.ts
+import { afterAll, afterEach, beforeAll } from "vitest";
+import { worker } from "./mocks/worker";
+
+beforeAll(() => worker.start({ quiet: true, onUnhandledFrame: "error" }));
+afterEach(() => worker.resetHandlers());
+afterAll(() => worker.stop());
+```
+
+```tsx
+// tests/web/fixtures.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render } from "vitest-browser-react";
+import { WeatherApi } from "../../src/web/api";
+import { WeatherCard } from "../../src/web/WeatherCard";
+import { test as base } from "../fixtures";
+import { WEATHER_API_URL } from "./mocks/handlers";
+
+export const test = base
+  .extend("api", () => WeatherApi.create({ baseUrl: WEATHER_API_URL }))
+  .extend("queryClient", ({}, { onCleanup }) => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    onCleanup(() => {
+      queryClient.clear();
+    });
+    return queryClient;
+  })
+  .extend(
+    "renderWeatherCard",
+    ({ api, queryClient }) =>
+      (city: string) =>
+        render(
+          <QueryClientProvider client={queryClient}>
+            <WeatherCard api={api} city={city} />
+          </QueryClientProvider>,
+        ),
+  );
+```
+
+```tsx
+// tests/web/WeatherCard.test.tsx
+test("tells the user an unknown city was not found, without offering a retry", async ({
+  renderWeatherCard,
+}) => {
+  worker.use(http.get(CURRENT_WEATHER_URL, () => new HttpResponse(null, { status: 404 })));
+
+  const screen = await renderWeatherCard("Atlantis");
+
+  await expect.element(screen.getByRole("alert")).toHaveTextContent("We couldn't find Atlantis.");
+  await expect.element(screen.getByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+});
+
+test("disables refresh while refetching, then shows the new reading", async ({ renderWeatherCard }) => {
+  const screen = await renderWeatherCard("Berlin");
+  await expect.element(screen.getByText("10.9 °C")).toBeVisible();
+  const upstream = Promise.withResolvers<void>();
+  worker.use(
+    http.get(CURRENT_WEATHER_URL, async () => {
+      await upstream.promise;
+      return HttpResponse.json(CurrentTemperatureFactory.build({ temperatureCelsius: 12.4 }));
+    }),
+  );
+
+  await screen.getByRole("button", { name: "Refresh" }).click();
+
+  await expect.element(screen.getByRole("button", { name: "Refreshing…" })).toBeDisabled();
+  upstream.resolve();
+  await expect.element(screen.getByText("12.4 °C")).toBeVisible();
+});
+```
+
+- Browser tests mock HTTP with `setupWorker` from `msw/browser`; the `msw/vite` plugin in `worker-only` mode serves the worker script, so nothing is copied into `public/`.
+- Providers (QueryClient, router, theme) come from fixtures, never a shared module-level instance. A fresh `QueryClient` per test with `retry: false`, cleared in `onCleanup`.
+- A render helper is a fixture that returns a function, so one test can render with different props.
+- Each state gets a test: loading (`delay("infinite")`), each error the UI tells apart, recovery, and every control.
+- Hold a response open with `Promise.withResolvers()` to assert in-flight UI (spinners, disabled buttons); requires `lib: ["ES2024"]`.
+- `{ once: true }` on a handler for "fails, then succeeds" retry tests.
 - Query by role and accessible name first, then label, then text. Never by class or test id unless nothing else is accessible.
 - `expect.element(...)` retries until it passes; don't wrap it in `expect.poll`.
 - Locators match exact text by default in Vitest 5. Use `toMatchTextContent` for partial or regex matches.
 - Interact through the locator (`.click()`, `.fill()`), not by calling handlers or setting state.
+
+## Biome
+
+Biome's `noEmptyPattern` rejects the `({}, { onCleanup })` that Vitest fixtures require. Turn it off for tests in `biome.json` once, instead of a `biome-ignore` on every fixture:
+
+```json
+{
+  "overrides": [
+    { "includes": ["tests/**"], "linter": { "rules": { "correctness": { "noEmptyPattern": "off" } } } }
+  ]
+}
+```
 
 ## Running
 
