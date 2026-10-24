@@ -320,6 +320,32 @@ async def apt_bundle():
         )
 
 
+async def pacman_bundle():
+    """Run pacman against the project Pacfile (Arch-based distros)."""
+    if not await trio.to_thread.run_sync(shutil.which, "pacman"):
+        return
+    pacfile = trio.Path(__file__).parent.parent / "Pacfile"
+    if not await pacfile.exists():
+        return
+    packages = [
+        line.strip()
+        for line in (await pacfile.read_text()).splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if not packages:
+        return
+
+    sudo = ["sudo", "-n"] if await trio.to_thread.run_sync(shutil.which, "sudo") else []
+    result = await run(
+        sudo + ["pacman", "-S", "--needed", "--noconfirm"] + packages,
+        check=False,
+    )
+    if result.returncode != 0:
+        error_console.print(
+            "⚠️ pacman install reported errors (a package may be unavailable)"
+        )
+
+
 async def uninstall_packages(packages: list[str]):
     """Uninstall the given brew packages."""
     if packages:
@@ -372,6 +398,9 @@ async def main(
 
     if installs or complete:
         await apt_bundle()
+
+    if installs or complete:
+        await pacman_bundle()
 
     if installs or complete:
         await custom_installs(config.get("custom_installs", {}))

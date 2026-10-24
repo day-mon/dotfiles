@@ -1,0 +1,32 @@
+# core tools: mirror of the Brewfile, mapped to Arch package names
+bat
+eza
+git-delta
+fzf
+ripgrep
+fd
+tldr
+btop
+jq
+git
+github-cli
+neovim
+zsh
+starship
+zoxide
+thefuck
+curl
+procps-ng
+go
+
+# arch extras beyond apt/brew parity:
+starship
+topgrade
+zed
+uv
+ghostty
+
+# nerd fonts (mac cask set is larger; core subset here, rest live in AUR):
+ttf-jetbrains-mono-nerd
+ttf-firacode-nerd
+ttf-nerd-fonts-symbols-mono
